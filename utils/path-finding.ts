@@ -1,6 +1,6 @@
-import Graph from './Graph';
-import features from '../features.json';
 import distance from '@turf/distance';
+import features from '../features.json';
+import Graph from './Graph';
 
 export type TrailColor = 'red' | 'blue' | 'green' | 'yellow' | 'black';
 
@@ -33,17 +33,23 @@ export type Node = {
   elevation: number;
 };
 
-type RouteNode = {
+type SegmentNode = {
   id: number;
   distance: number;
   trail_id: number;
   gCost: number;
   hCost: number;
   fCost: number;
-  parent: RouteNode | null;
+  parent: SegmentNode | null;
 };
 
 export type Route = {
+  segments: Segment[];
+  totalDistance: number;
+  totalDuration: number;
+};
+
+export type Segment = {
   trails: Trail[];
   distance: number;
   duration: number;
@@ -72,14 +78,33 @@ export const createGraph = () => {
   return graph;
 };
 
-export const findPath = (graph: Graph, routeNodes: Node[]) => {
+export const getRoute = (graph: Graph, routeNodes: Node[]): Route | null => {
+  if (routeNodes.length > 0) {
+    const route: Route = { segments: [], totalDistance: 0, totalDuration: 0 };
+    for (let i = 0; i < routeNodes.length - 1; i++) {
+      const node = routeNodes[i];
+      const nextNode = routeNodes[i + 1];
+      let segment: Segment | null = null;
+      segment = findPath(graph, node, nextNode);
+      if (segment) {
+        route.segments.push(segment);
+        route.totalDistance += segment.distance;
+        route.totalDuration += segment.duration;
+      }
+    }
+    return route;
+  } else {
+    return null;
+  }
+};
+
+export const findPath = (graph: Graph, startNode: Node, targetNode: Node) => {
   console.time('Search');
-  let openSet: RouteNode[] = [];
-  const closedSet: RouteNode[] = [];
-  const endNode = routeNodes[routeNodes.length - 1];
+  let openSet: SegmentNode[] = [];
+  const closedSet: SegmentNode[] = [];
 
   openSet.push({
-    id: routeNodes[0].id,
+    id: startNode.id,
     distance: 0,
     trail_id: 0,
     gCost: 0,
@@ -101,7 +126,7 @@ export const findPath = (graph: Graph, routeNodes: Node[]) => {
       }
     }
 
-    if (currentNode.id === endNode.id) {
+    if (currentNode.id === targetNode.id) {
       console.timeEnd('Search');
       //   console.log(closedSet);
       return retracePath(currentNode);
@@ -116,7 +141,7 @@ export const findPath = (graph: Graph, routeNodes: Node[]) => {
 
     const neighbors = graph.adjacencyList
       .get(currentNode.id)
-      ?.map<RouteNode>((node) => ({
+      ?.map<SegmentNode>((node) => ({
         id: node.node_id,
         distance: node.distance,
         trail_id: node.trail_id,
@@ -162,7 +187,7 @@ export const findPath = (graph: Graph, routeNodes: Node[]) => {
             const distanceToEndNode = Math.floor(
               distance(
                 [neighborNodeLngLat.lng, neighborNodeLngLat.lat],
-                [endNode.lng, endNode.lat],
+                [targetNode.lng, targetNode.lat],
                 {
                   units: 'meters',
                 },
@@ -190,7 +215,7 @@ export const findPath = (graph: Graph, routeNodes: Node[]) => {
   return null;
 };
 
-const retracePath = (current: RouteNode): Route => {
+const retracePath = (current: SegmentNode): Segment => {
   const path = [];
   let temp = current;
 

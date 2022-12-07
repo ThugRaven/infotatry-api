@@ -1,6 +1,6 @@
 import express from 'express';
 import features from '../features.json';
-import { createGraph, findPath, Node } from '../utils/path-finding';
+import { createGraph, getRoute, Node } from '../utils/path-finding';
 
 const router = express.Router();
 const graph = createGraph();
@@ -20,7 +20,7 @@ router.get('/:query', (req, res) => {
   });
 
   if (nodes.length > 1) {
-    const route = findPath(graph, nodes);
+    const route = getRoute(graph, nodes);
     return res.status(200).send({
       route: route,
     });
