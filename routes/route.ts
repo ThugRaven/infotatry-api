@@ -21,9 +21,11 @@ router.get('/:query', (req, res) => {
 
   if (nodes.length > 1) {
     const route = getRoute(graph, nodes);
-    return res.status(200).send({
-      route: route,
-    });
+    if (route) {
+      return res.status(200).send({
+        route: route,
+      });
+    }
     // console.log(route);
   }
 

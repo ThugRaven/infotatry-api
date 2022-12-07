@@ -90,7 +90,7 @@ export const getRoute = (graph: Graph, routeNodes: Node[]): Route | null => {
         route.segments.push(segment);
         route.totalDistance += segment.distance;
         route.totalDuration += segment.duration;
-      }
+      } else return null;
     }
     return route;
   } else {
