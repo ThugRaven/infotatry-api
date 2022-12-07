@@ -43,7 +43,7 @@ type RouteNode = {
   parent: RouteNode | null;
 };
 
-type Route = {
+export type Route = {
   trails: Trail[];
   distance: number;
   duration: number;
@@ -68,35 +68,18 @@ export const createGraph = () => {
     ),
   );
 
-  console.log(graph.adjacencyList);
+  //   console.log(graph.adjacencyList);
   return graph;
 };
 
-const findPath = (graph: Graph, nodes: Node[]) => {
+export const findPath = (graph: Graph, routeNodes: Node[]) => {
   console.time('Search');
   let openSet: RouteNode[] = [];
   const closedSet: RouteNode[] = [];
-
-  features.nodes.forEach((node) => graph.addVertex(node.id));
-  features.trails.forEach((trail) =>
-    graph.addEdge(
-      {
-        node_id: trail.node_id.start,
-        trail_id: trail.id,
-        distance: trail.distance,
-      },
-      {
-        node_id: trail.node_id.end,
-        trail_id: trail.id,
-        distance: trail.distance,
-      },
-    ),
-  );
-
-  const endNode = nodes[nodes.length - 1];
+  const endNode = routeNodes[routeNodes.length - 1];
 
   openSet.push({
-    id: nodes[0].id,
+    id: routeNodes[0].id,
     distance: 0,
     trail_id: 0,
     gCost: 0,
@@ -120,7 +103,7 @@ const findPath = (graph: Graph, nodes: Node[]) => {
 
     if (currentNode.id === endNode.id) {
       console.timeEnd('Search');
-      console.log(closedSet);
+      //   console.log(closedSet);
       return retracePath(currentNode);
     }
 
@@ -129,7 +112,7 @@ const findPath = (graph: Graph, nodes: Node[]) => {
         node.id !== currentNode.id && node.trail_id !== currentNode.trail_id,
     );
     closedSet.push(currentNode);
-    console.log('currentNode', currentNode);
+    // console.log('currentNode', currentNode);
 
     const neighbors = graph.adjacencyList
       .get(currentNode.id)
@@ -143,7 +126,9 @@ const findPath = (graph: Graph, nodes: Node[]) => {
         parent: null,
       }));
 
-    const currentNodeLngLat = nodes.find((node) => node.id === currentNode.id);
+    const currentNodeLngLat = features.nodes.find(
+      (node) => node.id === currentNode.id,
+    );
     if (currentNodeLngLat) {
       if (!neighbors) {
         return null;
@@ -156,7 +141,7 @@ const findPath = (graph: Graph, nodes: Node[]) => {
               node.id === neighbor.id && node.trail_id === neighbor.trail_id,
           )
         ) {
-          const neighborNodeLngLat = nodes.find(
+          const neighborNodeLngLat = features.nodes.find(
             (node) => node.id === neighbor.id,
           );
           if (!neighborNodeLngLat) {
@@ -164,7 +149,7 @@ const findPath = (graph: Graph, nodes: Node[]) => {
           }
 
           const costToNeighbor = currentNode.gCost + neighbor.distance;
-          console.log(costToNeighbor, neighbor.id, neighbor.gCost, neighbor);
+          //   console.log(costToNeighbor, neighbor.id, neighbor.gCost, neighbor);
 
           if (
             costToNeighbor < neighbor.gCost ||
@@ -195,7 +180,7 @@ const findPath = (graph: Graph, nodes: Node[]) => {
               )
             ) {
               openSet.push(neighbor);
-              console.log('neighbor', neighbor);
+              //   console.log('neighbor', neighbor);
             }
           }
         }
@@ -215,7 +200,7 @@ const retracePath = (current: RouteNode): Route => {
     temp = temp.parent;
   }
 
-  console.log(path);
+  //   console.log(path);
 
   const route: Trail[] = [];
   path.forEach((el) => {
@@ -225,16 +210,16 @@ const retracePath = (current: RouteNode): Route => {
     }
   });
   route.reverse();
-  console.log(route);
+  //   console.log(route);
   const distance = route.reduce((sum, trail) => sum + trail.distance, 0);
-  console.log(distance);
+  //   console.log(distance);
   const start = temp;
   const end = current;
   const routeTime = route.reduce((sum, trail, index, trails) => {
     let time = 0;
-    console.log('reduce');
-    console.log(trails[index]);
-    console.log(trails[index + 1]);
+    // console.log('reduce');
+    // console.log(trails[index]);
+    // console.log(trails[index + 1]);
     if (trail.node_id.start === start.id) {
       time = trail.time.start_end;
     } else if (trail.node_id.end === start.id) {
@@ -261,10 +246,10 @@ const retracePath = (current: RouteNode): Route => {
       time = trail.time.end_start;
     }
 
-    console.log(time);
+    // console.log(time);
     return sum + time;
   }, 0);
-  console.log(routeTime);
-  console.log(`${Math.floor(routeTime / 60)}h${routeTime % 60}m`);
+  //   console.log(routeTime);
+  //   console.log(`${Math.floor(routeTime / 60)}h${routeTime % 60}m`);
   return { trails: route, duration: routeTime, distance };
 };
