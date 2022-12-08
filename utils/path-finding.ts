@@ -89,7 +89,10 @@ export const createGraph = () => {
 export const getRoute = (graph: Graph, routeNodes: Node[]): Route | null => {
   if (routeNodes.length > 0) {
     const route: Route = {
-      name: { start: '', end: '' },
+      name: {
+        start: routeNodes[0].name,
+        end: routeNodes[routeNodes.length - 1].name,
+      },
       trails: [],
       distance: 0,
       duration: 0,
