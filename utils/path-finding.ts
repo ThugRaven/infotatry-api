@@ -44,15 +44,23 @@ type SegmentNode = {
 };
 
 export type Route = {
-  segments: Segment[];
-  totalDistance: number;
-  totalDuration: number;
+  name: {
+    start: string;
+    end: string;
+  };
+  trails: number[];
+  distance: number;
+  duration: number;
+  ascent: number;
+  descent: number;
 };
 
 export type Segment = {
-  trails: Trail[];
+  trails: number[];
   distance: number;
   duration: number;
+  ascent: number;
+  descent: number;
 };
 
 export const createGraph = () => {
@@ -80,16 +88,25 @@ export const createGraph = () => {
 
 export const getRoute = (graph: Graph, routeNodes: Node[]): Route | null => {
   if (routeNodes.length > 0) {
-    const route: Route = { segments: [], totalDistance: 0, totalDuration: 0 };
+    const route: Route = {
+      name: { start: '', end: '' },
+      trails: [],
+      distance: 0,
+      duration: 0,
+      ascent: 0,
+      descent: 0,
+    };
     for (let i = 0; i < routeNodes.length - 1; i++) {
       const node = routeNodes[i];
       const nextNode = routeNodes[i + 1];
       let segment: Segment | null = null;
       segment = findPath(graph, node, nextNode);
       if (segment) {
-        route.segments.push(segment);
-        route.totalDistance += segment.distance;
-        route.totalDuration += segment.duration;
+        route.trails.push(...segment.trails);
+        route.distance += segment.distance;
+        route.duration += segment.duration;
+        route.ascent += segment.ascent;
+        route.descent += segment.descent;
       } else return null;
     }
     return route;
@@ -221,25 +238,82 @@ const retracePath = (current: SegmentNode): Segment => {
 
   path.push(temp.trail_id);
   while (temp.parent) {
-    path.push(temp.parent.trail_id);
+    if (temp.parent.trail_id != 0) {
+      path.push(temp.parent.trail_id);
+    }
     temp = temp.parent;
   }
+  path.reverse();
 
-  //   console.log(path);
+  // console.log(path);
 
   const route: Trail[] = [];
+  let ascent = 0;
+  let descent = 0;
   path.forEach((el) => {
     const trail = features.trails.find((trail) => trail.id === el);
     if (trail) {
       route.push(trail as Trail);
     }
   });
-  route.reverse();
+
   //   console.log(route);
   const distance = route.reduce((sum, trail) => sum + trail.distance, 0);
   //   console.log(distance);
   const start = temp;
   const end = current;
+  for (let i = 0; i < route.length; i++) {
+    const trail = route[i];
+    const nextTrail = route[i + 1];
+
+    let startToEnd = true;
+    if (trail.node_id.start === start.id) {
+      startToEnd = true;
+    } else if (trail.node_id.end === start.id) {
+      startToEnd = false;
+    }
+
+    if (trail.node_id.start === end.id) {
+      startToEnd = false;
+    } else if (trail.node_id.end === end.id) {
+      startToEnd = true;
+    }
+
+    if (
+      nextTrail &&
+      (trail.node_id.end === nextTrail.node_id.start ||
+        trail.node_id.end === nextTrail.node_id.end)
+    ) {
+      startToEnd = true;
+    } else if (
+      nextTrail &&
+      (trail.node_id.start === nextTrail.node_id.end ||
+        trail.node_id.start === nextTrail.node_id.start)
+    ) {
+      startToEnd = false;
+    }
+
+    for (let i = 0; i < trail.elevation_profile.length - 1; i++) {
+      const elevationDelta = Math.abs(
+        trail.elevation_profile[i + 1] - trail.elevation_profile[i],
+      );
+      if (trail.elevation_profile[i] < trail.elevation_profile[i + 1]) {
+        if (startToEnd) {
+          ascent += elevationDelta;
+        } else {
+          descent += elevationDelta;
+        }
+      } else if (trail.elevation_profile[i] > trail.elevation_profile[i + 1]) {
+        if (startToEnd) {
+          descent += elevationDelta;
+        } else {
+          ascent += elevationDelta;
+        }
+      }
+    }
+
+    // console.log(trail.id, startToEnd, ascent, descent);
+  }
   const routeTime = route.reduce((sum, trail, index, trails) => {
     let time = 0;
     // console.log('reduce');
@@ -274,7 +348,9 @@ const retracePath = (current: SegmentNode): Segment => {
     // console.log(time);
     return sum + time;
   }, 0);
+
   //   console.log(routeTime);
   //   console.log(`${Math.floor(routeTime / 60)}h${routeTime % 60}m`);
-  return { trails: route, duration: routeTime, distance };
+  // return { trails: route, duration: routeTime, distance };
+  return { trails: path, distance, duration: routeTime, ascent, descent };
 };
