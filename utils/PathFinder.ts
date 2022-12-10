@@ -66,6 +66,7 @@ export type Segment = {
 export default class PathFinder {
   graph = new Graph();
   nodes = new Map<number, Node>();
+  nodeNames = new Map<string, number>();
   trails = new Map<number, Trail>();
 
   constructor() {
@@ -74,7 +75,10 @@ export default class PathFinder {
   }
 
   initializeFeatures() {
-    features.nodes.forEach((node) => this.nodes.set(node.id, node));
+    features.nodes.forEach((node) => {
+      this.nodes.set(node.id, node);
+      this.nodeNames.set(node.name.trim().toLowerCase(), node.id);
+    });
     features.trails.forEach((trail) =>
       this.trails.set(trail.id, trail as Trail),
     );
@@ -98,6 +102,22 @@ export default class PathFinder {
     );
 
     //   console.log(graph.adjacencyList);
+  }
+
+  getNodes(names: string[]) {
+    const foundNodes: Node[] = [];
+
+    names.forEach((name) => {
+      const nodeId = this.nodeNames.get(name.trim().toLowerCase());
+      if (nodeId) {
+        const node = this.nodes.get(nodeId);
+        if (node) {
+          foundNodes.push(node);
+        }
+      }
+    });
+
+    return foundNodes;
   }
 
   getRoute(routeNodes: Node[]): Route | null {

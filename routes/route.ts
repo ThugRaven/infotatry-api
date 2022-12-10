@@ -1,6 +1,5 @@
 import express from 'express';
-import features from '../features.json';
-import PathFinder, { Node } from '../utils/PathFinder';
+import PathFinder from '../utils/PathFinder';
 
 const router = express.Router();
 // const graph = createGraph();
@@ -9,16 +8,7 @@ const pathFinder = new PathFinder();
 router.get('/:query', (req, res) => {
   const query = req.params.query;
   const nodeNames = query.split(';');
-  const nodes: Node[] = [];
-
-  nodeNames.forEach((name) => {
-    const node = features.nodes.find(
-      (node) => node.name.trim().toLowerCase() == name.trim().toLowerCase(),
-    );
-    if (node) {
-      nodes.push(node);
-    }
-  });
+  const nodes = pathFinder.getNodes(nodeNames);
 
   if (nodes.length > 1) {
     // const route = getRoute(graph, nodes);
