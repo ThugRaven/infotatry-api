@@ -92,20 +92,23 @@ const hikeSchema = new mongoose.Schema(
   { autoCreate: false },
 );
 
-const tripSchema = new mongoose.Schema({
-  dateStart: {
-    type: Date,
-    required: true,
+const tripSchema = new mongoose.Schema(
+  {
+    dateStart: {
+      type: Date,
+      required: true,
+    },
+    dateEnd: {
+      type: Date,
+      required: true,
+    },
+    hikes: {
+      type: [hikeSchema],
+      required: true,
+    },
   },
-  dateEnd: {
-    type: Date,
-    required: true,
-  },
-  hikes: {
-    type: [hikeSchema],
-    required: true,
-  },
-});
+  { timestamps: true },
+);
 
 export const Segment = mongoose.model<Segment>('Segment', segmentSchema);
 export const Hike = mongoose.model<Hike>('Hike', hikeSchema);
