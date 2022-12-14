@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
 import route from '../routes/route';
+import trips from '../routes/trips';
 
 dotenv.config();
 
@@ -22,3 +23,4 @@ app.listen(8080, () => {
 });
 
 app.use('/route', route);
+app.use('/trips', trips);
