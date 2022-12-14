@@ -28,63 +28,69 @@ export interface Trip {
   hikes: Hike[];
 }
 
-const segmentSchema = new mongoose.Schema({
-  name: {
-    start: {
+const segmentSchema = new mongoose.Schema(
+  {
+    name: {
+      start: {
+        type: String,
+        required: true,
+      },
+      end: {
+        type: String,
+        required: true,
+      },
+    },
+    color: {
+      type: [String],
+      required: true,
+    },
+    distance: {
+      type: Number,
+      required: true,
+    },
+    startEndTime: {
+      type: Number,
+      required: true,
+    },
+    endStartTime: {
+      type: Number,
+      required: true,
+    },
+    encoded: {
       type: String,
       required: true,
     },
-    end: {
-      type: String,
-      required: true,
-    },
   },
-  color: {
-    type: [String],
-    required: true,
-  },
-  distance: {
-    type: Number,
-    required: true,
-  },
-  startEndTime: {
-    type: Number,
-    required: true,
-  },
-  endStartTime: {
-    type: Number,
-    required: true,
-  },
-  encoded: {
-    type: String,
-    required: true,
-  },
-});
+  { autoCreate: false },
+);
 
-const hikeSchema = new mongoose.Schema({
-  dateStart: {
-    type: Date,
-    required: true,
-  },
-  dateEnd: {
-    type: Date,
-    required: true,
-  },
-  name: {
-    start: {
-      type: String,
+const hikeSchema = new mongoose.Schema(
+  {
+    dateStart: {
+      type: Date,
       required: true,
     },
-    end: {
-      type: String,
+    dateEnd: {
+      type: Date,
+      required: true,
+    },
+    name: {
+      start: {
+        type: String,
+        required: true,
+      },
+      end: {
+        type: String,
+        required: true,
+      },
+    },
+    segments: {
+      type: [segmentSchema],
       required: true,
     },
   },
-  segments: {
-    type: [segmentSchema],
-    required: true,
-  },
-});
+  { autoCreate: false },
+);
 
 const tripSchema = new mongoose.Schema({
   dateStart: {
