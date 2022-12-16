@@ -140,7 +140,7 @@ router.post('/', async (req, res) => {
       elevations.push(
         ...(startToEnd
           ? trail.elevation_profile
-          : trail.elevation_profile.reverse()),
+          : [...trail.elevation_profile].reverse()),
       );
 
       const segment = new Segment({
