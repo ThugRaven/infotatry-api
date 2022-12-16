@@ -154,6 +154,16 @@ router.post('/', async (req, res) => {
     }
   }
 
+  // Add the last node of the route
+  const segment = new Segment({
+    name: nodeEnd.name,
+    color: '',
+    distance: 0,
+    time: 0,
+  });
+
+  segments.push(segment);
+
   // console.log(segments);
   // console.log(path);
   // console.log(encode(encoded));
