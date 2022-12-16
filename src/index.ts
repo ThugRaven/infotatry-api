@@ -2,8 +2,8 @@ import cors from 'cors';
 import * as dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
+import hikes from '../routes/hikes';
 import route from '../routes/route';
-import trips from '../routes/trips';
 
 dotenv.config();
 
@@ -23,4 +23,4 @@ app.listen(8080, () => {
 });
 
 app.use('/route', route);
-app.use('/trips', trips);
+app.use('/hikes', hikes);
