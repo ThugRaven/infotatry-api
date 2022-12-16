@@ -47,7 +47,7 @@ const segmentSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { autoCreate: false },
+  { autoCreate: false, _id: false },
 );
 
 const hikeSchema = new mongoose.Schema(
