@@ -148,6 +148,7 @@ router.post('/', async (req, res) => {
         color: trail.color,
         distance: trail.distance,
         time,
+        length: decoded.length,
       });
 
       segments.push(segment);
@@ -160,6 +161,7 @@ router.post('/', async (req, res) => {
     color: '',
     distance: 0,
     time: 0,
+    length: 0,
   });
 
   segments.push(segment);

@@ -5,6 +5,7 @@ export interface Segment {
   color: string[];
   distance: number;
   time: number;
+  length: number;
 }
 
 export interface Hike {
@@ -38,6 +39,10 @@ const segmentSchema = new mongoose.Schema(
       required: true,
     },
     time: {
+      type: Number,
+      required: true,
+    },
+    length: {
       type: Number,
       required: true,
     },
