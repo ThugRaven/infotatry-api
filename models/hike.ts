@@ -52,14 +52,16 @@ const segmentSchema = new mongoose.Schema(
 
 const hikeSchema = new mongoose.Schema(
   {
+    query: {
+      type: String,
+      required: true,
+    },
     name: {
       start: {
         type: String,
-        required: true,
       },
       end: {
         type: String,
-        required: true,
       },
     },
     date: {
@@ -74,23 +76,18 @@ const hikeSchema = new mongoose.Schema(
     },
     ascent: {
       type: Number,
-      required: true,
     },
     descent: {
       type: Number,
-      required: true,
     },
     encoded: {
       type: String,
-      required: true,
     },
     elevations: {
       type: [Number],
-      required: true,
     },
     segments: {
       type: [segmentSchema],
-      required: true,
     },
   },
   { timestamps: true },
