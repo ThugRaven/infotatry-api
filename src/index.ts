@@ -9,6 +9,7 @@ dotenv.config();
 
 const app = express();
 mongoose.set('strictQuery', false);
+mongoose.set('debug', true);
 mongoose.connect(process.env.DB_URL!);
 const db = mongoose.connection;
 
