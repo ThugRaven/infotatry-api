@@ -9,6 +9,7 @@ export interface Segment {
 }
 
 export interface Hike {
+  query: string;
   name: {
     start: string;
     end: string;
@@ -59,9 +60,11 @@ const hikeSchema = new mongoose.Schema(
     name: {
       start: {
         type: String,
+        required: true,
       },
       end: {
         type: String,
+        required: true,
       },
     },
     date: {
@@ -76,18 +79,23 @@ const hikeSchema = new mongoose.Schema(
     },
     ascent: {
       type: Number,
+      required: true,
     },
     descent: {
       type: Number,
+      required: true,
     },
     encoded: {
       type: String,
+      required: true,
     },
     elevations: {
       type: [Number],
+      required: true,
     },
     segments: {
       type: [segmentSchema],
+      required: true,
     },
   },
   { timestamps: true },
