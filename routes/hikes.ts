@@ -30,6 +30,17 @@ router.get('/:id', async (req, res) => {
       }
     }
 
+    if (hike?.encoded === '') {
+      const nodeNames = hike.query.split(';');
+      const nodes = pathFinder.getNodes(nodeNames);
+      const route = pathFinder.getRoute(nodes);
+      if (route) {
+        return res.status(200).send({
+          route: route,
+        });
+      }
+    }
+
     return res.status(200).send(hike);
   }
 
