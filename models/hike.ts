@@ -79,11 +79,11 @@ const hikeSchema = new mongoose.Schema(
     },
     ascent: {
       type: Number,
-      default: 0,
+      default: -1,
     },
     descent: {
       type: Number,
-      default: 0,
+      default: -1,
     },
     encoded: {
       type: String,
