@@ -50,7 +50,7 @@ export type Route = {
   };
   trails: number[];
   distance: number;
-  duration: number;
+  time: number;
   ascent: number;
   descent: number;
 };
@@ -58,7 +58,7 @@ export type Route = {
 export type Segment = {
   trails: number[];
   distance: number;
-  duration: number;
+  time: number;
   ascent: number;
   descent: number;
 };
@@ -101,6 +101,7 @@ export default class PathFinder {
       ),
     );
 
+    // console.log(this.graph.adjacencyList);
     //   console.log(graph.adjacencyList);
   }
 
@@ -117,6 +118,8 @@ export default class PathFinder {
       }
     });
 
+    // console.log(this.nodeNames);
+    // console.log(foundNodes);
     return foundNodes;
   }
 
@@ -129,7 +132,7 @@ export default class PathFinder {
         },
         trails: [],
         distance: 0,
-        duration: 0,
+        time: 0,
         ascent: 0,
         descent: 0,
       };
@@ -141,7 +144,7 @@ export default class PathFinder {
         if (segment) {
           route.trails.push(...segment.trails);
           route.distance += segment.distance;
-          route.duration += segment.duration;
+          route.time += segment.time;
           route.ascent += segment.ascent;
           route.descent += segment.descent;
         } else return null;
@@ -348,7 +351,7 @@ export default class PathFinder {
         }
       }
 
-      // console.log(trail.id, startToEnd, ascent, descent);
+      console.log(trail.id, startToEnd, ascent, descent);
     }
     const routeTime = route.reduce((sum, trail, index, trails) => {
       let time = 0;
@@ -388,6 +391,6 @@ export default class PathFinder {
     //   console.log(routeTime);
     //   console.log(`${Math.floor(routeTime / 60)}h${routeTime % 60}m`);
     // return { trails: route, duration: routeTime, distance };
-    return { trails: path, distance, duration: routeTime, ascent, descent };
+    return { trails: path, distance, time: routeTime, ascent, descent };
   }
 }
