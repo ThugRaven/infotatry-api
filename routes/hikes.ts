@@ -35,9 +35,7 @@ router.get('/:id', async (req, res) => {
       const nodes = pathFinder.getNodes(nodeNames);
       const route = pathFinder.getRoute(nodes);
       if (route) {
-        return res.status(200).send({
-          route: route,
-        });
+        return res.status(200).send(route);
       }
     }
 

@@ -14,9 +14,7 @@ router.get('/:query', (req, res) => {
     // const route = getRoute(graph, nodes);
     const route = pathFinder.getRoute(nodes);
     if (route) {
-      return res.status(200).send({
-        route: route,
-      });
+      return res.status(200).send(route);
     }
     // console.log(route);
   }
