@@ -18,6 +18,8 @@ export interface Hike {
     start: Date;
     end: Date;
   };
+  distance: number;
+  time: number;
   ascent: number;
   descent: number;
   encoded: string;
@@ -76,6 +78,14 @@ const hikeSchema = new mongoose.Schema(
         type: Date,
         required: true,
       },
+    },
+    distance: {
+      type: Number,
+      default: -1,
+    },
+    time: {
+      type: Number,
+      default: -1,
     },
     ascent: {
       type: Number,

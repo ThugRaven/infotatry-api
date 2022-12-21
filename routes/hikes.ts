@@ -149,6 +149,8 @@ router.patch('/:id', async (req, res) => {
 
   let ascent = 0;
   let descent = 0;
+  let totalDistance = 0;
+  let totalTime = 0;
   const path = [];
   const elevations = [];
 
@@ -241,6 +243,9 @@ router.patch('/:id', async (req, res) => {
         length: decoded.length,
       });
 
+      totalDistance += trail.distance;
+      totalTime += time;
+
       segments.push(segment);
     }
   }
@@ -262,6 +267,8 @@ router.patch('/:id', async (req, res) => {
 
   plannedHike.name.start = nodeStart.name;
   plannedHike.name.end = nodeEnd.name;
+  plannedHike.distance = totalDistance;
+  plannedHike.time = totalTime;
   plannedHike.ascent = ascent;
   plannedHike.descent = descent;
   plannedHike.encoded = encode(path);
