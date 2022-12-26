@@ -1,25 +1,31 @@
 import express from 'express';
 import mongoose, { HydratedDocument } from 'mongoose';
 import features from '../features.json';
-import { Hike, Segment } from '../models/hike';
+import { CompletedHike, PlannedHike, Segment } from '../models/hike';
 import PathFinder, { Trail } from '../utils/PathFinder';
 import { decode, encode } from '../utils/utils';
 
 const router = express.Router();
 const pathFinder = new PathFinder();
 
-router.get('/:id', async (req, res) => {
+router.get('/planned/:id', async (req, res) => {
   const id = req.params.id;
 
   if (id && mongoose.Types.ObjectId.isValid(id)) {
     let hike = null;
     try {
-      hike = await Hike.findById(id);
+      hike = await PlannedHike.findById(id);
       if (hike == null) {
         return res.status(404).send({
           status: 404,
           message: 'Hike not found',
         });
+      }
+      const nodeNames = hike.query.split(';');
+      const nodes = pathFinder.getNodes(nodeNames);
+      const route = pathFinder.getRoute(nodes);
+      if (route) {
+        return res.status(200).send(route);
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -29,17 +35,6 @@ router.get('/:id', async (req, res) => {
         });
       }
     }
-
-    if (hike?.encoded === '') {
-      const nodeNames = hike.query.split(';');
-      const nodes = pathFinder.getNodes(nodeNames);
-      const route = pathFinder.getRoute(nodes);
-      if (route) {
-        return res.status(200).send(route);
-      }
-    }
-
-    return res.status(200).send(hike);
   }
 
   res.status(400).send({
@@ -48,7 +43,38 @@ router.get('/:id', async (req, res) => {
   });
 });
 
-router.post('/', async (req, res) => {
+router.get('/completed/:id', async (req, res) => {
+  const id = req.params.id;
+
+  if (id && mongoose.Types.ObjectId.isValid(id)) {
+    let hike = null;
+    try {
+      hike = await CompletedHike.findById(id);
+      if (hike == null) {
+        return res.status(404).send({
+          status: 404,
+          message: 'Hike not found',
+        });
+      }
+
+      return res.status(200).send(hike);
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(500).send({
+          status: 500,
+          message: error.message,
+        });
+      }
+    }
+  }
+
+  res.status(400).send({
+    status: 400,
+    message: 'Invalid hike ID',
+  });
+});
+
+router.post('/planned', async (req, res) => {
   const { query, dateStart, dateEnd } = req.body;
   if (!query || !dateStart || !dateEnd) {
     return res.status(400).send({
@@ -68,7 +94,7 @@ router.post('/', async (req, res) => {
     });
   }
 
-  const hike = new Hike({
+  const plannedHike = new PlannedHike({
     query,
     date: {
       start: dateStart,
@@ -77,8 +103,8 @@ router.post('/', async (req, res) => {
   });
 
   try {
-    const newHike = await hike.save();
-    return res.status(201).send(newHike);
+    const hike = await plannedHike.save();
+    return res.status(201).send(hike);
   } catch (error) {
     if (error instanceof Error) {
       return res.status(400).send({
@@ -89,11 +115,11 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.patch('/:id', async (req, res) => {
+router.post('/completed/:id', async (req, res) => {
   const id = req.params.id;
   // console.log(id);
 
-  let plannedHike: HydratedDocument<Hike> | null = null;
+  let plannedHike: HydratedDocument<PlannedHike> | null = null;
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).send({
       status: 400,
@@ -102,7 +128,7 @@ router.patch('/:id', async (req, res) => {
   }
 
   try {
-    plannedHike = await Hike.findById(id);
+    plannedHike = await PlannedHike.findById(id);
   } catch (error) {
     if (error instanceof Error) {
       return res.status(500).send({
@@ -265,19 +291,28 @@ router.patch('/:id', async (req, res) => {
   // console.log(path);
   // console.log(encode(encoded));
 
-  plannedHike.name.start = nodeStart.name;
-  plannedHike.name.end = nodeEnd.name;
-  plannedHike.distance = totalDistance;
-  plannedHike.time = totalTime;
-  plannedHike.ascent = ascent;
-  plannedHike.descent = descent;
-  plannedHike.encoded = encode(path);
-  plannedHike.elevations = elevations;
-  plannedHike.segments = segments;
+  const completedHike = new CompletedHike({
+    query: plannedHike.query,
+    name: {
+      start: nodeStart.name,
+      end: nodeEnd.name,
+    },
+    date: {
+      start: plannedHike.date.start,
+      end: plannedHike.date.end,
+    },
+    distance: totalDistance,
+    time: totalTime,
+    ascent,
+    descent,
+    encoded: encode(path),
+    elevations,
+    segments,
+  });
 
   try {
-    const updatedHike = await plannedHike.save();
-    return res.status(200).send(updatedHike);
+    const hike = await completedHike.save();
+    return res.status(201).send(hike);
   } catch (error) {
     if (error instanceof Error) {
       return res.status(400).send({

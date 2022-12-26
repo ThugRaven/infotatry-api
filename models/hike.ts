@@ -8,7 +8,15 @@ export interface Segment {
   length: number;
 }
 
-export interface Hike {
+export interface PlannedHike {
+  query: string;
+  date: {
+    start: Date;
+    end: Date;
+  };
+}
+
+export interface CompletedHike {
   query: string;
   name: {
     start: string;
@@ -53,7 +61,27 @@ const segmentSchema = new mongoose.Schema(
   { autoCreate: false, _id: false },
 );
 
-const hikeSchema = new mongoose.Schema(
+const plannedHikeSchema = new mongoose.Schema(
+  {
+    query: {
+      type: String,
+      required: true,
+    },
+    date: {
+      start: {
+        type: Date,
+        required: true,
+      },
+      end: {
+        type: Date,
+        required: true,
+      },
+    },
+  },
+  { timestamps: true },
+);
+
+const completedhikeSchema = new mongoose.Schema(
   {
     query: {
       type: String,
@@ -112,4 +140,11 @@ const hikeSchema = new mongoose.Schema(
 );
 
 export const Segment = mongoose.model<Segment>('Segment', segmentSchema);
-export const Hike = mongoose.model<Hike>('Hike', hikeSchema);
+export const PlannedHike = mongoose.model<PlannedHike>(
+  'PlannedHike',
+  plannedHikeSchema,
+);
+export const CompletedHike = mongoose.model<CompletedHike>(
+  'CompletedHike',
+  completedhikeSchema,
+);
