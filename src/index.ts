@@ -1,3 +1,4 @@
+import MongoStore from 'connect-mongo';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
 import express from 'express';
@@ -29,6 +30,9 @@ app.use(
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+      client: db.getClient(),
+    }),
   }),
 );
 app.use(passport.initialize());
