@@ -1,7 +1,7 @@
 import { PassportStatic } from 'passport';
 import { Strategy as LocalStrategy, VerifyFunction } from 'passport-local';
 import { User } from '../models/user';
-import { hashPassword } from './password-utils';
+import { comparePasswords } from './password-utils';
 
 export function initializePassport(
   passport: PassportStatic,
@@ -11,17 +11,20 @@ export function initializePassport(
   const authenticateUser: VerifyFunction = async (email, password, done) => {
     const user = await getUserByEmail(email);
     if (!user) {
+      console.log('user not found');
       return done(null, false, { message: 'User not found' });
     }
 
     try {
-      const userPassword = await hashPassword(user.password);
-      if (password === userPassword) {
+      if (await comparePasswords(user.password, password)) {
+        console.log('login');
         return done(null, user);
       } else {
+        console.log('wrong password');
         return done(null, false, { message: 'Incorrect password' });
       }
     } catch (error) {
+      console.log(error);
       return done(error);
     }
   };
