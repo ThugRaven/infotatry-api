@@ -157,7 +157,7 @@ router.post('/completed/:id', isAuthenticated, async (req, res) => {
     });
   }
 
-  if (user.id !== plannedHike.userId) {
+  if (user.id !== plannedHike.userId.toString()) {
     return res.status(401).send({
       status: 401,
       message: 'Unauthorized',
