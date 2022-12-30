@@ -23,8 +23,8 @@ export async function comparePasswords(
   hashedPassword: string,
   plainPassword: string,
 ) {
-  const salt = hashedPassword.split(':')[0];
-  const hashedPasswordBuffer = Buffer.from(hashedPassword.split(':')[1], 'hex');
+  const [salt, password] = hashedPassword.split(':');
+  const hashedPasswordBuffer = Buffer.from(password, 'hex');
   const { buffer: plainPasswordBuffer } = await getPasswordBuffer(
     plainPassword,
     salt,
