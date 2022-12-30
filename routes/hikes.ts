@@ -10,8 +10,9 @@ import { isAuthenticated } from './auth';
 const router = express.Router();
 const pathFinder = new PathFinder();
 
-router.get('/planned/:id', async (req, res) => {
+router.get('/planned/:id', isAuthenticated, async (req, res) => {
   const id = req.params.id;
+  const user = (await req.user) as User;
 
   if (id && mongoose.Types.ObjectId.isValid(id)) {
     let hike = null;
@@ -23,6 +24,14 @@ router.get('/planned/:id', async (req, res) => {
           message: 'Hike not found',
         });
       }
+
+      if (user.id !== hike.userId.toString()) {
+        return res.status(401).send({
+          status: 401,
+          message: 'Unauthorized',
+        });
+      }
+
       const nodeNames = hike.query.split(';');
       const nodes = pathFinder.getNodes(nodeNames);
       const route = pathFinder.getRoute(nodes);
@@ -45,8 +54,9 @@ router.get('/planned/:id', async (req, res) => {
   });
 });
 
-router.get('/completed/:id', async (req, res) => {
+router.get('/completed/:id', isAuthenticated, async (req, res) => {
   const id = req.params.id;
+  const user = (await req.user) as User;
 
   if (id && mongoose.Types.ObjectId.isValid(id)) {
     let hike = null;
@@ -56,6 +66,13 @@ router.get('/completed/:id', async (req, res) => {
         return res.status(404).send({
           status: 404,
           message: 'Hike not found',
+        });
+      }
+
+      if (user.id !== hike.userId.toString()) {
+        return res.status(401).send({
+          status: 401,
+          message: 'Unauthorized',
         });
       }
 
