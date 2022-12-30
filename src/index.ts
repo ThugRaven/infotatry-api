@@ -24,7 +24,12 @@ db.once('open', () => console.log('Server connected to the database'));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  }),
+);
 app.use(
   session({
     secret: process.env.SESSION_SECRET!,
