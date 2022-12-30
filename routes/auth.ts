@@ -47,4 +47,14 @@ export const isAuthenticated = (
   res.status(401).send();
 };
 
+router.post('/logout', isAuthenticated, (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+
+    return res.status(201).send({ redirect: '/' });
+  });
+});
+
 export default router;
