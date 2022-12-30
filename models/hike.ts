@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { ObjectId, Schema } from 'mongoose';
 
 export interface Segment {
   name: string;
@@ -9,6 +9,7 @@ export interface Segment {
 }
 
 export interface PlannedHike {
+  userId: ObjectId;
   query: string;
   date: {
     start: Date;
@@ -17,6 +18,7 @@ export interface PlannedHike {
 }
 
 export interface CompletedHike {
+  userId: ObjectId;
   query: string;
   name: {
     start: string;
@@ -63,6 +65,10 @@ const segmentSchema = new mongoose.Schema(
 
 const plannedHikeSchema = new mongoose.Schema(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
     query: {
       type: String,
       required: true,
@@ -83,6 +89,10 @@ const plannedHikeSchema = new mongoose.Schema(
 
 const completedhikeSchema = new mongoose.Schema(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
     query: {
       type: String,
       required: true,
