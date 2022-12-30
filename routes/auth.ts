@@ -15,7 +15,10 @@ router.post('/register', async (req, res) => {
     });
 
     const user = await newUser.save();
-    return res.status(201).send(user);
+    passport.authenticate('local');
+    return res.status(201).send({ redirect: '/' });
+
+    // return res.status(201).send(user);
   } catch (error) {
     if (error instanceof Error) {
       return res.status(400).send({
@@ -28,12 +31,8 @@ router.post('/register', async (req, res) => {
   return res.status(200).send();
 });
 
-router.post(
-  '/login',
-  passport.authenticate('local', {
-    successRedirect: process.env.WEB_URL + '/',
-    failureRedirect: process.env.WEB_URL + '/login',
-  }),
-);
+router.post('/login', passport.authenticate('local'), (req, res) => {
+  res.status(201).send({ redirect: '/' });
+});
 
 export default router;
