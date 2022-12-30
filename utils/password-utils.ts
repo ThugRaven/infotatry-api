@@ -3,7 +3,7 @@ import util from 'node:util';
 
 const pbkdf2 = util.promisify(crypto.pbkdf2);
 export async function getPasswordBuffer(password: string, salt?: string) {
-  const passwordSalt = salt ?? crypto.randomBytes(128).toString('base64');
+  const passwordSalt = salt ?? crypto.randomBytes(32).toString('hex');
   const buffer = await pbkdf2(password, passwordSalt, 120000, 64, 'sha512');
   return {
     buffer,
