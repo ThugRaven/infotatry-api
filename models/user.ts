@@ -22,7 +22,7 @@ const userSchema = new Schema<User>(
       required: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true, autoIndex: false },
 );
 
 export const User = mongoose.model<User>('User', userSchema);
