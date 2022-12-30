@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import passport from 'passport';
 import { User } from '../models/user';
 import { hashPassword } from '../utils/password-utils';
@@ -34,5 +34,17 @@ router.post('/register', async (req, res) => {
 router.post('/login', passport.authenticate('local'), (req, res) => {
   res.status(201).send({ redirect: '/' });
 });
+
+export const isAuthenticated = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+
+  res.status(401).send();
+};
 
 export default router;
