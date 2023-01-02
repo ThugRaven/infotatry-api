@@ -44,7 +44,7 @@ export const isAuthenticated = (
     return next();
   }
 
-  res.status(401).send();
+  res.status(401).send({ message: 'Unauthorized' });
 };
 
 router.post('/logout', isAuthenticated, (req, res, next) => {
@@ -55,6 +55,16 @@ router.post('/logout', isAuthenticated, (req, res, next) => {
 
     return res.status(201).send({ redirect: '/' });
   });
+});
+
+router.get('/user', async (req, res) => {
+  console.log(req.session);
+  if (req.isAuthenticated()) {
+    const user = (await req.user) as User;
+    return res.status(200).send({ user });
+  }
+
+  return res.status(200).send({ user: null });
 });
 
 export default router;
