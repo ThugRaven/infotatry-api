@@ -37,7 +37,9 @@ app.use(
     saveUninitialized: false,
     store: MongoStore.create({
       client: db.getClient(),
+      touchAfter: 24 * 60 * 60, // 24 hours
     }),
+    // cookie: {secure: true}
   }),
 );
 app.use(passport.initialize());
