@@ -35,6 +35,16 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
   res.status(201).send({ redirect: '/' });
 });
 
+router.get('/login/google', passport.authenticate('google'));
+
+router.get(
+  '/login/google/callback',
+  passport.authenticate('google', {
+    successRedirect: 'http://localhost:3000/',
+    failureRedirect: 'http://localhost:3000/login',
+  }),
+);
+
 export const isAuthenticated = (
   req: Request,
   res: Response,

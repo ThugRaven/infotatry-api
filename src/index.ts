@@ -5,10 +5,13 @@ import express from 'express';
 import session from 'express-session';
 import mongoose from 'mongoose';
 import passport from 'passport';
+import { Profile } from 'passport-google-oauth20';
+import { Account } from '../models/account';
 import { User } from '../models/user';
 import auth from '../routes/auth';
 import hikes from '../routes/hikes';
 import route from '../routes/route';
+import { initializeGoogleStrategy } from '../utils/google';
 import { initializePassport } from '../utils/passport';
 
 dotenv.config();
@@ -55,6 +58,55 @@ initializePassport(
     return await User.findOne({ email });
   },
   async (id: string) => {
+    return await User.findById(id);
+  },
+);
+
+initializeGoogleStrategy(
+  passport,
+  async (provider: string, id: string) => {
+    console.log('find account');
+    return await Account.findOne({ provider, providerId: id });
+  },
+  async (profile: Profile) => {
+    console.log('create user');
+    const newUser = new User({
+      name: profile.displayName,
+      email: profile.emails ? profile.emails[0].value : '',
+    });
+
+    try {
+      const user = await newUser.save();
+      return user;
+    } catch (error) {
+      console.log(error);
+      if (error instanceof Error) {
+        return null;
+      }
+      return null;
+    }
+  },
+  async (provider: string, providerId: string, userId: string) => {
+    console.log('create account');
+    const newAccount = new Account({
+      provider,
+      providerId,
+      userId,
+    });
+
+    try {
+      const account = await newAccount.save();
+      return account;
+    } catch (error) {
+      console.log(error);
+      if (error instanceof Error) {
+        return null;
+      }
+      return null;
+    }
+  },
+  async (id: string) => {
+    console.log('find user');
     return await User.findById(id);
   },
 );
