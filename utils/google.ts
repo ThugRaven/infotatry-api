@@ -43,7 +43,7 @@ export function initializeGoogleStrategy(
             user.id,
           );
           console.log('create account');
-          return done(null, { id: newAccount?.id, name: profile.displayName });
+          return done(null, user);
         }
       } else {
         console.log('get user');
