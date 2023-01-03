@@ -67,14 +67,4 @@ router.post('/logout', isAuthenticated, (req, res, next) => {
   });
 });
 
-router.get('/user', async (req, res) => {
-  console.log(req.session);
-  if (req.isAuthenticated()) {
-    const user = (await req.user) as User;
-    return res.status(200).send({ user });
-  }
-
-  return res.status(200).send({ user: null });
-});
-
 export default router;

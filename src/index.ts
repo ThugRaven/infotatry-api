@@ -11,6 +11,7 @@ import { User } from '../models/user';
 import auth from '../routes/auth';
 import hikes from '../routes/hikes';
 import route from '../routes/route';
+import user from '../routes/user';
 import { initializeGoogleStrategy } from '../utils/google';
 import { initializePassport } from '../utils/passport';
 
@@ -58,7 +59,7 @@ initializePassport(
     return await User.findOne({ email });
   },
   async (id: string) => {
-    return await User.findById(id);
+    return await User.findById(id).select({ password: 0 });
   },
 );
 
@@ -115,3 +116,4 @@ initializeGoogleStrategy(
 app.use('/route', route);
 app.use('/hikes', hikes);
 app.use('/auth', auth);
+app.use('/user', user);

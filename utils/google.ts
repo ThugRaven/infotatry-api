@@ -63,16 +63,6 @@ export function initializeGoogleStrategy(
     }
   };
 
-  //   passport.use(
-  //     new LocalStrategy(
-  //       {
-  //         usernameField: 'email',
-  //         passwordField: 'password',
-  //       },
-  //       authenticateUser,
-  //     ),
-  //   );
-
   passport.use(
     new GoogleStrategy(
       {
