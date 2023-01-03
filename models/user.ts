@@ -4,6 +4,7 @@ export interface User extends Document {
   name: string;
   email: string;
   password?: string;
+  image?: string;
 }
 
 const userSchema = new Schema<User>(
@@ -18,6 +19,9 @@ const userSchema = new Schema<User>(
       unique: true,
     },
     password: {
+      type: String,
+    },
+    image: {
       type: String,
     },
   },

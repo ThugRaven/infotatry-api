@@ -73,6 +73,7 @@ initializeGoogleStrategy(
     const newUser = new User({
       name: profile.displayName,
       email: profile.emails ? profile.emails[0].value : '',
+      image: profile.photos ? profile.photos[0].value : '',
     });
 
     try {
