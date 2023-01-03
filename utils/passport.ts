@@ -15,6 +15,11 @@ export function initializePassport(
       return done(null, false, { message: 'User not found' });
     }
 
+    if (!user.password) {
+      console.log('provider');
+      return done(null, false, { message: 'Provider' });
+    }
+
     try {
       if (await comparePasswords(user.password, password)) {
         console.log('login');
