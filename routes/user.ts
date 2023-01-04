@@ -31,7 +31,8 @@ router.get('/hikes/count', isAuthenticated, async (req, res) => {
 
 router.get('/hikes/planned', isAuthenticated, async (req, res) => {
   const user = (await req.user) as User;
-  const { page, pageSize, offset } = getPaginationValues(req.body.page, 10);
+  const queryPage = req.query.page?.toString();
+  const { page, pageSize, offset } = getPaginationValues(queryPage, 10);
 
   const count = await PlannedHike.countDocuments({ userId: user.id });
   if (offset >= count) {
@@ -46,7 +47,8 @@ router.get('/hikes/planned', isAuthenticated, async (req, res) => {
 
 router.get('/hikes/completed', isAuthenticated, async (req, res) => {
   const user = (await req.user) as User;
-  const { page, pageSize, offset } = getPaginationValues(req.body.page, 10);
+  const queryPage = req.query.page?.toString();
+  const { page, pageSize, offset } = getPaginationValues(queryPage, 10);
 
   const count = await CompletedHike.countDocuments({ userId: user.id });
   if (offset >= count) {
