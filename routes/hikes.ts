@@ -2,14 +2,17 @@ import express from 'express';
 import mongoose, { HydratedDocument } from 'mongoose';
 import features from '../features.json';
 import { CompletedHike, PlannedHike, Segment } from '../models/hike';
+import { User } from '../models/user';
 import PathFinder, { Trail } from '../utils/PathFinder';
 import { decode, encode } from '../utils/utils';
+import { isAuthenticated } from './auth';
 
 const router = express.Router();
 const pathFinder = new PathFinder();
 
-router.get('/planned/:id', async (req, res) => {
+router.get('/planned/:id', isAuthenticated, async (req, res) => {
   const id = req.params.id;
+  const user = (await req.user) as User;
 
   if (id && mongoose.Types.ObjectId.isValid(id)) {
     let hike = null;
@@ -21,6 +24,14 @@ router.get('/planned/:id', async (req, res) => {
           message: 'Hike not found',
         });
       }
+
+      if (user.id !== hike.userId.toString()) {
+        return res.status(401).send({
+          status: 401,
+          message: 'Unauthorized',
+        });
+      }
+
       const nodeNames = hike.query.split(';');
       const nodes = pathFinder.getNodes(nodeNames);
       const route = pathFinder.getRoute(nodes);
@@ -43,8 +54,9 @@ router.get('/planned/:id', async (req, res) => {
   });
 });
 
-router.get('/completed/:id', async (req, res) => {
+router.get('/completed/:id', isAuthenticated, async (req, res) => {
   const id = req.params.id;
+  const user = (await req.user) as User;
 
   if (id && mongoose.Types.ObjectId.isValid(id)) {
     let hike = null;
@@ -54,6 +66,13 @@ router.get('/completed/:id', async (req, res) => {
         return res.status(404).send({
           status: 404,
           message: 'Hike not found',
+        });
+      }
+
+      if (user.id !== hike.userId.toString()) {
+        return res.status(401).send({
+          status: 401,
+          message: 'Unauthorized',
         });
       }
 
@@ -74,12 +93,20 @@ router.get('/completed/:id', async (req, res) => {
   });
 });
 
-router.post('/planned', async (req, res) => {
+router.post('/planned', isAuthenticated, async (req, res) => {
   const { query, dateStart, dateEnd } = req.body;
+  const user = (await req.user) as User;
   if (!query || !dateStart || !dateEnd) {
     return res.status(400).send({
       status: 400,
       message: 'Missing params',
+    });
+  }
+
+  if (!user) {
+    return res.status(401).send({
+      status: 401,
+      message: 'Unauthorized',
     });
   }
 
@@ -95,6 +122,7 @@ router.post('/planned', async (req, res) => {
   }
 
   const plannedHike = new PlannedHike({
+    userId: user.id,
     query,
     date: {
       start: dateStart,
@@ -115,8 +143,9 @@ router.post('/planned', async (req, res) => {
   }
 });
 
-router.post('/completed/:id', async (req, res) => {
+router.post('/completed/:id', isAuthenticated, async (req, res) => {
   const id = req.params.id;
+  const user = (await req.user) as User;
   // console.log(id);
 
   let plannedHike: HydratedDocument<PlannedHike> | null = null;
@@ -145,6 +174,12 @@ router.post('/completed/:id', async (req, res) => {
     });
   }
 
+  if (user.id !== plannedHike.userId.toString()) {
+    return res.status(401).send({
+      status: 401,
+      message: 'Unauthorized',
+    });
+  }
   // console.log(plannedHike);
 
   const nodeNames = plannedHike.query.split(';');
@@ -292,6 +327,7 @@ router.post('/completed/:id', async (req, res) => {
   // console.log(encode(encoded));
 
   const completedHike = new CompletedHike({
+    userId: plannedHike.userId,
     query: plannedHike.query,
     name: {
       start: nodeStart.name,
