@@ -3,8 +3,8 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import features from '../features.json';
 import { CompletedHike, PlannedHike, Segment } from '../models/hike';
 import { User } from '../models/user';
+import { decode, encode } from '../utils/path-utils';
 import PathFinder, { Trail } from '../utils/PathFinder';
-import { decode, encode } from '../utils/utils';
 import { isAuthenticated } from './auth';
 
 const router = express.Router();
