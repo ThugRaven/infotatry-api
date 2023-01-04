@@ -123,6 +123,18 @@ export default class PathFinder {
     return foundNodes;
   }
 
+  getFirstAndLastNode(names: string[]) {
+    const nodeStartId = this.nodeNames.get(names[0].trim().toLowerCase());
+    const nodeEndId = this.nodeNames.get(
+      names[names.length - 2].trim().toLowerCase(),
+    );
+
+    const nodeStartName = nodeStartId ? this.nodes.get(nodeStartId)?.name : undefined;
+    const nodeEndName = nodeEndId ? this.nodes.get(nodeEndId)?.name : undefined;
+
+    return { nodeStartName, nodeEndName };
+  }
+
   getRoute(routeNodes: Node[]): Route | null {
     if (routeNodes.length > 0) {
       const route: Route = {

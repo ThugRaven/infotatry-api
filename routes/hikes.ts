@@ -110,10 +110,16 @@ router.post('/planned', isAuthenticated, async (req, res) => {
     });
   }
 
+  const nodeNames = query.split(';');
+  const { nodeStartName, nodeEndName } =
+    pathFinder.getFirstAndLastNode(nodeNames);
+
   if (
     typeof query !== 'string' ||
     typeof dateStart !== 'number' ||
-    typeof dateEnd !== 'number'
+    typeof dateEnd !== 'number' ||
+    !nodeStartName ||
+    !nodeEndName
   ) {
     return res.status(400).send({
       status: 400,
@@ -124,6 +130,10 @@ router.post('/planned', isAuthenticated, async (req, res) => {
   const plannedHike = new PlannedHike({
     userId: user.id,
     query,
+    name: {
+      start: nodeStartName,
+      end: nodeEndName,
+    },
     date: {
       start: dateStart,
       end: dateEnd,

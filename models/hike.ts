@@ -11,6 +11,10 @@ export interface Segment {
 export interface PlannedHike {
   userId: ObjectId;
   query: string;
+  name: {
+    start: string;
+    end: string;
+  };
   date: {
     start: Date;
     end: Date;
@@ -72,6 +76,16 @@ const plannedHikeSchema = new mongoose.Schema(
     query: {
       type: String,
       required: true,
+    },
+    name: {
+      start: {
+        type: String,
+        required: true,
+      },
+      end: {
+        type: String,
+        required: true,
+      },
     },
     date: {
       start: {
