@@ -15,10 +15,7 @@ export interface PlannedHike {
     start: string;
     end: string;
   };
-  date: {
-    start: Date;
-    end: Date;
-  };
+  date: Date;
 }
 
 export interface CompletedHike {
@@ -88,14 +85,8 @@ const plannedHikeSchema = new mongoose.Schema(
       },
     },
     date: {
-      start: {
-        type: Date,
-        required: true,
-      },
-      end: {
-        type: Date,
-        required: true,
-      },
+      type: Date,
+      required: true,
     },
   },
   { timestamps: true },

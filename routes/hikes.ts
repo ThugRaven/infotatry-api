@@ -94,9 +94,9 @@ router.get('/completed/:id', isAuthenticated, async (req, res) => {
 });
 
 router.post('/planned', isAuthenticated, async (req, res) => {
-  const { query, dateStart, dateEnd } = req.body;
+  const { query, date } = req.body;
   const user = (await req.user) as User;
-  if (!query || !dateStart || !dateEnd) {
+  if (!query || !date) {
     return res.status(400).send({
       status: 400,
       message: 'Missing params',
@@ -116,8 +116,7 @@ router.post('/planned', isAuthenticated, async (req, res) => {
 
   if (
     typeof query !== 'string' ||
-    typeof dateStart !== 'number' ||
-    typeof dateEnd !== 'number' ||
+    typeof date !== 'number' ||
     !nodeStartName ||
     !nodeEndName
   ) {
@@ -134,10 +133,7 @@ router.post('/planned', isAuthenticated, async (req, res) => {
       start: nodeStartName,
       end: nodeEndName,
     },
-    date: {
-      start: dateStart,
-      end: dateEnd,
-    },
+    date,
   });
 
   try {
@@ -344,8 +340,8 @@ router.post('/completed/:id', isAuthenticated, async (req, res) => {
       end: nodeEnd.name,
     },
     date: {
-      start: plannedHike.date.start,
-      end: plannedHike.date.end,
+      start: plannedHike.date,
+      end: plannedHike.date,
     },
     distance: totalDistance,
     time: totalTime,
