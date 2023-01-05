@@ -12,6 +12,7 @@ import auth from '../routes/auth';
 import hikes from '../routes/hikes';
 import route from '../routes/route';
 import user from '../routes/user';
+import weather from '../routes/weather';
 import { initializeGoogleStrategy } from '../utils/google';
 import { initializePassport } from '../utils/passport';
 
@@ -117,3 +118,4 @@ app.use('/route', route);
 app.use('/hikes', hikes);
 app.use('/auth', auth);
 app.use('/user', user);
+app.use('/weather', weather);
