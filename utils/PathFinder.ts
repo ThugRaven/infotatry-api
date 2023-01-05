@@ -129,7 +129,9 @@ export default class PathFinder {
       names[names.length - 2].trim().toLowerCase(),
     );
 
-    const nodeStartName = nodeStartId ? this.nodes.get(nodeStartId)?.name : undefined;
+    const nodeStartName = nodeStartId
+      ? this.nodes.get(nodeStartId)?.name
+      : undefined;
     const nodeEndName = nodeEndId ? this.nodes.get(nodeEndId)?.name : undefined;
 
     return { nodeStartName, nodeEndName };
