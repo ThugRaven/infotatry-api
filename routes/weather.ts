@@ -40,4 +40,16 @@ router.get('/forecast/:lat/:lng', async (req, res) => {
   res.status(200).send(weatherForecast);
 });
 
+router.get('/forecast/:cityName', async (req, res) => {
+  const cityName = req.params.cityName;
+
+  const weatherForecast = await weather.getWeatherForecastByCityName(cityName);
+  console.log(
+    'weatherForecast',
+    weatherForecast ? weatherForecast.cod : weatherForecast,
+  );
+
+  res.status(200).send(weatherForecast);
+});
+
 export default router;
