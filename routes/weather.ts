@@ -46,6 +46,7 @@ router.get('/forecast/:cityName', async (req, res) => {
   const weatherForecast = await weather.getWeatherForecastByCityName(cityName);
   console.log(
     'weatherForecast',
+    // @ts-ignore
     weatherForecast ? weatherForecast.cod : weatherForecast,
   );
 

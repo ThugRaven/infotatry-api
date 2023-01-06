@@ -57,9 +57,11 @@ app.listen(8080, () => {
 initializePassport(
   passport,
   async (email: string) => {
+    console.log('get user by email');
     return await User.findOne({ email });
   },
   async (id: string) => {
+    console.log('get user by id');
     return await User.findById(id).select({ password: 0 });
   },
 );
