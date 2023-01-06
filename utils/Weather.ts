@@ -1,19 +1,12 @@
 import axios from 'axios';
 import Cache from './Cache';
 import { useCacheAndCallApi } from './utils';
+import { WeatherForecastResponse } from './weather-types';
 
 interface LatLng {
   lat: string;
   lng: string;
 }
-
-// interface Cache {
-//   expires: number;
-// }
-
-// interface WeatherForecastCache extends Cache {
-//   data: any;
-// }
 
 export default class Weather {
   API_KEY: string;
@@ -22,14 +15,12 @@ export default class Weather {
   URL_BASE = 'https://api.openweathermap.org/data/2.5';
 
   cityNames = new Map<string, LatLng>();
-  // weatherForecastCache = new Map<string, WeatherForecastCache>();
-  weatherForecastCache = new Cache();
-  // currentWeatherCache = new Map<string, WeatherCache>();
+  weatherForecastCache = new Cache<WeatherForecastResponse>();
 
   constructor(apiKey: string) {
     this.API_KEY = apiKey;
 
-    this.cityNames.set('Zakopane', { lat: '49.2969446', lng: '19.950659' });
+    this.cityNames.set('Zakopane', { lat: '49.2969', lng: '19.9507' });
   }
 
   setUnits(unit: string) {
@@ -110,52 +101,17 @@ export default class Weather {
         () => this.getWeatherForecastByLatLng(latLngs.lat, latLngs.lng),
       );
       return data;
-      // const cache = this.weatherForecastCache.getCache(cityName);
-
-      // if (!cache) {
-      //   console.log('api');
-      //   const api = await this.getWeatherForecastByLatLng(
-      //     latLngs.lat,
-      //     latLngs.lng,
-      //   );
-
-      //   if (!api) {
-      //     return null;
-      //   }
-
-      //   this.weatherForecastCache.setCache(cityName, api);
-      //   return api;
-      // }
-
-      // return cache;
-
-      // const cache = this.weatherForecastCache.get(cityName);
-      // if (cache && cache.expires > Date.now()) {
-      //   console.log('get from cache');
-      //   return cache.data;
-      // }
-
-      // console.log('get from api');
-      // const api = await this.getWeatherForecastByLatLng(
-      //   latLngs.lat,
-      //   latLngs.lng,
-      // );
-      // if (api) {
-      //   const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
-      //   this.weatherForecastCache.set(cityName, { data: api, expires });
-      //   return api;
-      // }
     }
 
     return null;
   }
 
-  getWeatherForecastByLatLng(lat: string, lng: string) {
+  async getWeatherForecastByLatLng<T>(lat: string, lng: string) {
     const url = `${this.URL_BASE}/forecast?lat=${encodeURI(
       lat,
     )}&lon=${encodeURI(lng)}&appid=${this.API_KEY}`;
 
-    return this.prepareURLFetch(url);
+    return await this.prepareURLFetch<T>(url);
   }
 
   getOneCallByLatLong(lat: number, long: number) {
