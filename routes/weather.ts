@@ -35,7 +35,11 @@ router.get('/forecast/:lat/:lng', async (req, res) => {
     latitude,
     longitude,
   );
-  console.log('weatherForecast', weatherForecast);
+  console.log(
+    'weatherForecast',
+    // @ts-ignore
+    weatherForecast ? weatherForecast.cod : weatherForecast,
+  );
 
   res.status(200).send(weatherForecast);
 });

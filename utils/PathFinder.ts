@@ -43,6 +43,13 @@ type SegmentNode = {
   parent: SegmentNode | null;
 };
 
+type WeatherSite = {
+  id: number;
+  name: string;
+  lat: string;
+  lng: string;
+};
+
 export type Route = {
   name: {
     start: string;
@@ -53,6 +60,7 @@ export type Route = {
   time: number;
   ascent: number;
   descent: number;
+  weatherSite: WeatherSite | null;
 };
 
 export type Segment = {
@@ -61,6 +69,7 @@ export type Segment = {
   time: number;
   ascent: number;
   descent: number;
+  highestNode: Node | null;
 };
 
 export default class PathFinder {
@@ -149,7 +158,11 @@ export default class PathFinder {
         time: 0,
         ascent: 0,
         descent: 0,
+        weatherSite: null,
       };
+
+      let highestNode: Node | null = null;
+
       for (let i = 0; i < routeNodes.length - 1; i++) {
         const node = routeNodes[i];
         const nextNode = routeNodes[i + 1];
@@ -161,8 +174,43 @@ export default class PathFinder {
           route.time += segment.time;
           route.ascent += segment.ascent;
           route.descent += segment.descent;
+
+          if (segment.highestNode) {
+            if (
+              !highestNode ||
+              segment.highestNode.elevation > highestNode?.elevation
+            ) {
+              highestNode = segment.highestNode;
+              console.log('highestNode', highestNode);
+            }
+          }
         } else return null;
       }
+
+      const lastNode = routeNodes[routeNodes.length - 1];
+      if (
+        highestNode &&
+        (routeNodes[0].name === routeNodes[routeNodes.length - 1].name ||
+          routeNodes[0].elevation > lastNode.elevation ||
+          routeNodes[0].elevation > lastNode.elevation - 150)
+      ) {
+        route.weatherSite = {
+          id: highestNode.id,
+          name: highestNode.name,
+          lat: highestNode.lat.toFixed(4),
+          lng: highestNode.lng.toFixed(4),
+        };
+      } else {
+        route.weatherSite = {
+          id: lastNode.id,
+          name: lastNode.name,
+          lat: lastNode.lat.toFixed(4),
+          lng: lastNode.lng.toFixed(4),
+        };
+      }
+
+      console.log(route.weatherSite);
+
       return route;
     } else {
       return null;
@@ -299,6 +347,7 @@ export default class PathFinder {
     // console.log(path);
 
     const route: Trail[] = [];
+    let highestNode: Node | null = null;
     let ascent = 0;
     let descent = 0;
     path.forEach((id) => {
@@ -316,6 +365,22 @@ export default class PathFinder {
     for (let i = 0; i < route.length; i++) {
       const trail = route[i];
       const nextTrail = route[i + 1];
+
+      const nodeStart = this.nodes.get(trail.node_id.start);
+      const nodeEnd = this.nodes.get(trail.node_id.end);
+      if (nodeStart && nodeEnd) {
+        if (!highestNode) {
+          highestNode = nodeStart;
+        }
+
+        if (highestNode.elevation < nodeStart.elevation) {
+          highestNode = nodeStart;
+        }
+        if (highestNode.elevation < nodeEnd.elevation) {
+          highestNode = nodeEnd;
+        }
+      }
+      console.log('route', highestNode);
 
       let startToEnd = true;
       if (trail.node_id.start === start.id) {
@@ -405,6 +470,13 @@ export default class PathFinder {
     //   console.log(routeTime);
     //   console.log(`${Math.floor(routeTime / 60)}h${routeTime % 60}m`);
     // return { trails: route, duration: routeTime, distance };
-    return { trails: path, distance, time: routeTime, ascent, descent };
+    return {
+      trails: path,
+      distance,
+      time: routeTime,
+      ascent,
+      descent,
+      highestNode,
+    };
   }
 }
