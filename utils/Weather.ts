@@ -1,4 +1,5 @@
 import axios from 'axios';
+import features from '../features.json';
 import Cache from './Cache';
 import { useCacheAndCallApi } from './utils';
 import { WeatherForecastResponse } from './weather-types';
@@ -16,11 +17,18 @@ export default class Weather {
 
   cityNames = new Map<string, LatLng>();
   weatherForecastCache = new Cache<WeatherForecastResponse>();
+  weatherSites = new Map<string, LatLng>();
 
   constructor(apiKey: string) {
     this.API_KEY = apiKey;
 
     this.cityNames.set('Zakopane', { lat: '49.2969', lng: '19.9507' });
+    features.nodes.forEach((node) => {
+      this.weatherSites.set(node.name.trim().toLowerCase(), {
+        lat: node.lat.toFixed(4),
+        lng: node.lng.toFixed(4),
+      });
+    });
   }
 
   setUnits(unit: string) {
@@ -116,6 +124,25 @@ export default class Weather {
     );
 
     return data;
+  }
+
+  async getWeatherForecastByWeatherSite(weatherSite: string) {
+    console.log(this.weatherForecastCache);
+
+    weatherSite = weatherSite.trim().toLowerCase();
+    const _weatherSite = this.weatherSites.get(weatherSite);
+
+    if (_weatherSite) {
+      const data = await useCacheAndCallApi(
+        this.weatherForecastCache,
+        weatherSite,
+        () =>
+          this.getWeatherForecastByLatLng(_weatherSite.lat, _weatherSite.lng),
+      );
+      return data;
+    }
+
+    return null;
   }
 
   async getWeatherForecastByLatLng<T>(lat: string, lng: string) {

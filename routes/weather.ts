@@ -54,15 +54,22 @@ router.get('/forecast/:lat/:lng', async (req, res) => {
   res.status(200).send(weatherForecast);
 });
 
-router.get('/forecast/:cityName', async (req, res) => {
-  const cityName = req.params.cityName;
+router.get('/forecast/:weatherSite', async (req, res) => {
+  const weatherSite = req.params.weatherSite;
 
-  const weatherForecast = await weather.getWeatherForecastByCityName(cityName);
+  const weatherForecast = await weather.getWeatherForecastByWeatherSite(
+    weatherSite,
+  );
   console.log(
     'weatherForecast',
-    // @ts-ignore
     weatherForecast ? weatherForecast.cod : weatherForecast,
   );
+
+  if (!weatherForecast) {
+    return res.status(404).send({
+      message: 'Weather forecast not found',
+    });
+  }
 
   res.status(200).send(weatherForecast);
 });
