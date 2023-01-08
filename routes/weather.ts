@@ -29,15 +29,25 @@ router.get('/current/:lat/:lng', async (req, res) => {
 });
 
 router.get('/forecast/:lat/:lng', async (req, res) => {
-  const { lat: latitude, lng: longitude } = req.params;
+  const { lat, lng } = req.params;
 
-  const weatherForecast = await weather.getWeatherForecastByLatLng(
+  const _lat = parseFloat(lat);
+  const _lng = parseFloat(lng);
+  if (isNaN(_lat) || isNaN(_lng)) {
+    res.status(404).send({
+      message: 'Weather site not found',
+    });
+  }
+
+  const latitude = _lat.toFixed(4);
+  const longitude = _lng.toFixed(4);
+
+  const weatherForecast = await weather.getWeatherForecastByLatLngWithCache(
     latitude,
     longitude,
   );
   console.log(
     'weatherForecast',
-    // @ts-ignore
     weatherForecast ? weatherForecast.cod : weatherForecast,
   );
 

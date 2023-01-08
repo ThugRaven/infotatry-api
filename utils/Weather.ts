@@ -106,6 +106,18 @@ export default class Weather {
     return null;
   }
 
+  async getWeatherForecastByLatLngWithCache(lat: string, lng: string) {
+    console.log(this.weatherForecastCache);
+
+    const data = await useCacheAndCallApi(
+      this.weatherForecastCache,
+      `${lat}-${lng}`,
+      () => this.getWeatherForecastByLatLng(lat, lng),
+    );
+
+    return data;
+  }
+
   async getWeatherForecastByLatLng<T>(lat: string, lng: string) {
     const url = `${this.URL_BASE}/forecast?lat=${encodeURI(
       lat,
