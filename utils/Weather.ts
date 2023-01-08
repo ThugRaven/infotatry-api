@@ -2,7 +2,10 @@ import axios from 'axios';
 import features from '../features.json';
 import Cache from './Cache';
 import { useCacheAndCallApi } from './utils';
-import { WeatherForecastResponse } from './weather-types';
+import {
+  CurrentWeatherResponse,
+  WeatherForecastResponse,
+} from './weather-types';
 
 interface LatLng {
   lat: string;
@@ -16,6 +19,7 @@ export default class Weather {
   URL_BASE = 'https://api.openweathermap.org/data/2.5';
 
   cityNames = new Map<string, LatLng>();
+  currentWeatherCache = new Cache<CurrentWeatherResponse>();
   weatherForecastCache = new Cache<WeatherForecastResponse>();
   weatherSites = new Map<string, LatLng>();
 
@@ -89,12 +93,31 @@ export default class Weather {
     return this.prepareURLFetch(url);
   }
 
-  getCurrentWeatherByLatLng(lat: string, lng: string) {
+  async getCurrentWeatherByLatLng<T>(lat: string, lng: string) {
     const url = `${this.URL_BASE}/weather?lat=${encodeURI(lat)}&lon=${encodeURI(
       lng,
     )}&appid=${this.API_KEY}`;
 
-    return this.prepareURLFetch(url);
+    return await this.prepareURLFetch<T>(url);
+  }
+
+  async getCurrentWeatherByWeatherSite(weatherSite: string) {
+    console.log(this.currentWeatherCache);
+
+    weatherSite = weatherSite.trim().toLowerCase();
+    const _weatherSite = this.weatherSites.get(weatherSite);
+
+    if (_weatherSite) {
+      const data = await useCacheAndCallApi(
+        this.currentWeatherCache,
+        weatherSite,
+        () =>
+          this.getCurrentWeatherByLatLng(_weatherSite.lat, _weatherSite.lng),
+      );
+      return data;
+    }
+
+    return null;
   }
 
   async getWeatherForecastByCityName(cityName: string) {

@@ -28,6 +28,26 @@ router.get('/current/:lat/:lng', async (req, res) => {
   res.status(200).send(currentWeather);
 });
 
+router.get('/current/:weatherSite', async (req, res) => {
+  const weatherSite = req.params.weatherSite;
+
+  const currentWeather = await weather.getCurrentWeatherByWeatherSite(
+    weatherSite,
+  );
+  console.log(
+    'currentWeather',
+    currentWeather ? currentWeather.cod : currentWeather,
+  );
+
+  if (!currentWeather) {
+    return res.status(404).send({
+      message: 'Current weather not found',
+    });
+  }
+
+  res.status(200).send(currentWeather);
+});
+
 router.get('/forecast/:lat/:lng', async (req, res) => {
   const { lat, lng } = req.params;
 
