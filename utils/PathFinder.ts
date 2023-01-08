@@ -46,8 +46,6 @@ type SegmentNode = {
 type WeatherSite = {
   id: number;
   name: string;
-  lat: string;
-  lng: string;
 };
 
 export type Route = {
@@ -197,15 +195,11 @@ export default class PathFinder {
         route.weatherSite = {
           id: highestNode.id,
           name: highestNode.name,
-          lat: highestNode.lat.toFixed(4),
-          lng: highestNode.lng.toFixed(4),
         };
       } else {
         route.weatherSite = {
           id: lastNode.id,
           name: lastNode.name,
-          lat: lastNode.lat.toFixed(4),
-          lng: lastNode.lng.toFixed(4),
         };
       }
 
