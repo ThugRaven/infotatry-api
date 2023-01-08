@@ -20,7 +20,7 @@ export default class Weather {
 
   cityNames = new Map<string, LatLng>();
   currentWeatherCache = new Cache<CurrentWeatherResponse>();
-  weatherForecastCache = new Cache<WeatherForecastResponse>();
+  weatherForecastCache = new Cache<WeatherForecastResponse>(30 * 60 * 1000); // 30 minutes
   weatherSites = new Map<string, LatLng>();
 
   constructor(apiKey: string) {
