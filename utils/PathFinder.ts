@@ -179,7 +179,6 @@ export default class PathFinder {
               segment.highestNode.elevation > highestNode?.elevation
             ) {
               highestNode = segment.highestNode;
-              console.log('highestNode', highestNode);
             }
           }
         } else return null;
@@ -325,26 +324,96 @@ export default class PathFinder {
     return null;
   }
 
+  getTrailDirection(
+    trail: Trail,
+    nextTrail: Trail,
+    start: SegmentNode,
+    end: SegmentNode,
+  ) {
+    let startToEnd = true;
+    if (trail.node_id.start === start.id) {
+      startToEnd = true;
+    } else if (trail.node_id.end === start.id) {
+      startToEnd = false;
+    }
+
+    if (trail.node_id.start === end.id) {
+      startToEnd = false;
+    } else if (trail.node_id.end === end.id) {
+      startToEnd = true;
+    }
+
+    if (
+      nextTrail &&
+      (trail.node_id.end === nextTrail.node_id.start ||
+        trail.node_id.end === nextTrail.node_id.end)
+    ) {
+      startToEnd = true;
+    } else if (
+      nextTrail &&
+      (trail.node_id.start === nextTrail.node_id.end ||
+        trail.node_id.start === nextTrail.node_id.start)
+    ) {
+      startToEnd = false;
+    }
+
+    return startToEnd;
+  }
+
+  getTrailAscentAndDescent(trail: Trail, startToEnd: boolean) {
+    let ascent = 0;
+    let descent = 0;
+
+    for (let i = 0; i < trail.elevation_profile.length - 1; i++) {
+      const elevationDelta = Math.abs(
+        trail.elevation_profile[i + 1] - trail.elevation_profile[i],
+      );
+      if (trail.elevation_profile[i] < trail.elevation_profile[i + 1]) {
+        if (startToEnd) {
+          ascent += elevationDelta;
+        } else {
+          descent += elevationDelta;
+        }
+      } else if (trail.elevation_profile[i] > trail.elevation_profile[i + 1]) {
+        if (startToEnd) {
+          descent += elevationDelta;
+        } else {
+          ascent += elevationDelta;
+        }
+      }
+    }
+
+    return [ascent, descent];
+  }
+
+  getTrailTime(trail: Trail, startToEnd: boolean) {
+    const time = startToEnd ? trail.time.start_end : trail.time.end_start;
+
+    return time;
+  }
+
   retracePath(current: SegmentNode): Segment {
-    const path = [];
+    const trailsIds = [];
     let temp = current;
 
-    path.push(temp.trail_id);
+    trailsIds.push(temp.trail_id);
     while (temp.parent) {
       if (temp.parent.trail_id != 0) {
-        path.push(temp.parent.trail_id);
+        trailsIds.push(temp.parent.trail_id);
       }
       temp = temp.parent;
     }
-    path.reverse();
+    trailsIds.reverse();
 
     // console.log(path);
 
     const route: Trail[] = [];
     let highestNode: Node | null = null;
-    let ascent = 0;
-    let descent = 0;
-    path.forEach((id) => {
+    let distance = 0;
+    let routeTime = 0;
+    let totalAscent = 0;
+    let totalDescent = 0;
+    trailsIds.forEach((id) => {
       const trail = this.trails.get(id);
       if (trail) {
         route.push(trail as Trail);
@@ -352,7 +421,6 @@ export default class PathFinder {
     });
 
     //   console.log(route);
-    const distance = route.reduce((sum, trail) => sum + trail.distance, 0);
     //   console.log(distance);
     const start = temp;
     const end = current;
@@ -374,102 +442,37 @@ export default class PathFinder {
           highestNode = nodeEnd;
         }
       }
-      console.log('route', highestNode);
 
-      let startToEnd = true;
-      if (trail.node_id.start === start.id) {
-        startToEnd = true;
-      } else if (trail.node_id.end === start.id) {
-        startToEnd = false;
-      }
+      const startToEnd = this.getTrailDirection(trail, nextTrail, start, end);
 
-      if (trail.node_id.start === end.id) {
-        startToEnd = false;
-      } else if (trail.node_id.end === end.id) {
-        startToEnd = true;
-      }
+      distance += trail.distance;
+      routeTime += this.getTrailTime(trail, startToEnd);
+      const [ascent, descent] = this.getTrailAscentAndDescent(
+        trail,
+        startToEnd,
+      );
+      totalAscent += ascent;
+      totalDescent += descent;
 
-      if (
-        nextTrail &&
-        (trail.node_id.end === nextTrail.node_id.start ||
-          trail.node_id.end === nextTrail.node_id.end)
-      ) {
-        startToEnd = true;
-      } else if (
-        nextTrail &&
-        (trail.node_id.start === nextTrail.node_id.end ||
-          trail.node_id.start === nextTrail.node_id.start)
-      ) {
-        startToEnd = false;
-      }
-
-      for (let i = 0; i < trail.elevation_profile.length - 1; i++) {
-        const elevationDelta = Math.abs(
-          trail.elevation_profile[i + 1] - trail.elevation_profile[i],
-        );
-        if (trail.elevation_profile[i] < trail.elevation_profile[i + 1]) {
-          if (startToEnd) {
-            ascent += elevationDelta;
-          } else {
-            descent += elevationDelta;
-          }
-        } else if (
-          trail.elevation_profile[i] > trail.elevation_profile[i + 1]
-        ) {
-          if (startToEnd) {
-            descent += elevationDelta;
-          } else {
-            ascent += elevationDelta;
-          }
-        }
-      }
-
-      console.log(trail.id, startToEnd, ascent, descent);
+      console.log(
+        trail.id,
+        startToEnd,
+        ascent,
+        totalAscent,
+        descent,
+        totalDescent,
+      );
     }
-    const routeTime = route.reduce((sum, trail, index, trails) => {
-      let time = 0;
-      // console.log('reduce');
-      // console.log(trails[index]);
-      // console.log(trails[index + 1]);
-      if (trail.node_id.start === start.id) {
-        time = trail.time.start_end;
-      } else if (trail.node_id.end === start.id) {
-        time = trail.time.end_start;
-      }
-
-      if (trail.node_id.start === end.id) {
-        time = trail.time.end_start;
-      } else if (trail.node_id.end === end.id) {
-        time = trail.time.start_end;
-      }
-
-      if (
-        trails[index + 1] &&
-        (trails[index + 1].node_id.start === trail.node_id.end ||
-          trails[index + 1].node_id.end === trail.node_id.end)
-      ) {
-        time = trail.time.start_end;
-      } else if (
-        trails[index + 1] &&
-        (trails[index + 1].node_id.end === trail.node_id.start ||
-          trails[index + 1].node_id.start === trail.node_id.start)
-      ) {
-        time = trail.time.end_start;
-      }
-
-      // console.log(time);
-      return sum + time;
-    }, 0);
 
     //   console.log(routeTime);
     //   console.log(`${Math.floor(routeTime / 60)}h${routeTime % 60}m`);
     // return { trails: route, duration: routeTime, distance };
     return {
-      trails: path,
+      trails: trailsIds,
       distance,
       time: routeTime,
-      ascent,
-      descent,
+      ascent: totalAscent,
+      descent: totalDescent,
       highestNode,
     };
   }
