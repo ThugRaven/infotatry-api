@@ -1,10 +1,8 @@
 import express from 'express';
 import mongoose, { HydratedDocument } from 'mongoose';
-import features from '../features.json';
-import { CompletedHike, PlannedHike, Segment } from '../models/hike';
+import { CompletedHike, PlannedHike } from '../models/hike';
 import { User } from '../models/user';
-import { decode, encode } from '../utils/path-utils';
-import PathFinder, { Trail } from '../utils/PathFinder';
+import PathFinder from '../utils/PathFinder';
 import { isAuthenticated } from './auth';
 
 const router = express.Router();
@@ -152,7 +150,6 @@ router.post('/planned', isAuthenticated, async (req, res) => {
 router.post('/completed/:id', isAuthenticated, async (req, res) => {
   const id = req.params.id;
   const user = (await req.user) as User;
-  // console.log(id);
 
   let plannedHike: HydratedDocument<PlannedHike> | null = null;
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
@@ -186,168 +183,36 @@ router.post('/completed/:id', isAuthenticated, async (req, res) => {
       message: 'Unauthorized',
     });
   }
-  // console.log(plannedHike);
 
   const nodeNames = plannedHike.query.split(';');
   const nodes = pathFinder.getNodes(nodeNames);
-  const route = pathFinder.getRoute(nodes);
-  if (!route) {
+  const routeWithSegments = pathFinder.getRouteWithSegments(nodes);
+  console.log('routeWithSegments', routeWithSegments);
+
+  if (!routeWithSegments) {
     return res.status(404).send({
       status: 404,
       message: 'Route not found',
     });
   }
 
-  const trailsIds = route.trails;
-  const segments: Segment[] = [];
-
-  let nodeStart = features.nodes.find(
-    (node) => node.name.toLowerCase() === route.name.start.trim().toLowerCase(),
-  );
-  let nodeEnd = features.nodes.find(
-    (node) => node.name.toLowerCase() === route.name.end.trim().toLowerCase(),
-  );
-  if (!nodeStart || !nodeEnd) {
-    return res.status(400).send({
-      status: 400,
-      message: 'Invalid nodes',
-    });
-  }
-
-  let ascent = 0;
-  let descent = 0;
-  let totalDistance = 0;
-  let totalTime = 0;
-  const path = [];
-  const elevations = [];
-
-  if (trailsIds && trailsIds instanceof Array) {
-    const trails: Trail[] = [];
-    trailsIds.forEach((id) => {
-      const trail = features.trails.find((trail) => trail.id === id);
-      if (trail) {
-        trails.push(trail as Trail);
-      }
-    });
-
-    const start = trails[0];
-    const end = trails[trails.length - 1];
-
-    for (let i = 0; i < trails.length; i++) {
-      const trail = trails[i];
-      const nextTrail = trails[i + 1];
-
-      let startToEnd = true;
-      if (trail.node_id.start === start.id) {
-        startToEnd = true;
-      } else if (trail.node_id.end === start.id) {
-        startToEnd = false;
-      }
-
-      if (trail.node_id.start === end.id) {
-        startToEnd = false;
-      } else if (trail.node_id.end === end.id) {
-        startToEnd = true;
-      }
-
-      if (
-        nextTrail &&
-        (trail.node_id.end === nextTrail.node_id.start ||
-          trail.node_id.end === nextTrail.node_id.end)
-      ) {
-        startToEnd = true;
-      } else if (
-        nextTrail &&
-        (trail.node_id.start === nextTrail.node_id.end ||
-          trail.node_id.start === nextTrail.node_id.start)
-      ) {
-        startToEnd = false;
-      }
-
-      for (let i = 0; i < trail.elevation_profile.length - 1; i++) {
-        const elevationDelta = Math.abs(
-          trail.elevation_profile[i + 1] - trail.elevation_profile[i],
-        );
-        if (trail.elevation_profile[i] < trail.elevation_profile[i + 1]) {
-          if (startToEnd) {
-            ascent += elevationDelta;
-          } else {
-            descent += elevationDelta;
-          }
-        } else if (
-          trail.elevation_profile[i] > trail.elevation_profile[i + 1]
-        ) {
-          if (startToEnd) {
-            descent += elevationDelta;
-          } else {
-            ascent += elevationDelta;
-          }
-        }
-      }
-
-      // console.log(trail.id, startToEnd, ascent, descent);
-
-      const time = startToEnd ? trail.time.start_end : trail.time.end_start;
-
-      const decoded = decode(trail.encoded);
-      // if (startToEnd) {
-      //   path.push(...decoded);
-      // } else {
-      //   path.push(...decoded.reverse());
-      // }
-      path.push(...(startToEnd ? decoded : decoded.reverse()));
-      elevations.push(
-        ...(startToEnd
-          ? trail.elevation_profile
-          : [...trail.elevation_profile].reverse()),
-      );
-
-      const segment = new Segment({
-        name: startToEnd ? trail.name.start : trail.name.end,
-        color: trail.color,
-        distance: trail.distance,
-        time,
-        length: decoded.length,
-      });
-
-      totalDistance += trail.distance;
-      totalTime += time;
-
-      segments.push(segment);
-    }
-  }
-
-  // Add the last node of the route
-  const segment = new Segment({
-    name: nodeEnd.name,
-    color: '',
-    distance: 0,
-    time: 0,
-    length: 0,
-  });
-
-  segments.push(segment);
-
-  // console.log(segments);
-  // console.log(path);
-  // console.log(encode(encoded));
-
+  const { route, segments, encoded, elevations } = routeWithSegments;
   const completedHike = new CompletedHike({
     userId: plannedHike.userId,
     query: plannedHike.query,
     name: {
-      start: nodeStart.name,
-      end: nodeEnd.name,
+      start: route.name.start,
+      end: route.name.end,
     },
     date: {
       start: plannedHike.date,
       end: plannedHike.date,
     },
-    distance: totalDistance,
-    time: totalTime,
-    ascent,
-    descent,
-    encoded: encode(path),
+    distance: route.distance,
+    time: route.time,
+    ascent: route.ascent,
+    descent: route.descent,
+    encoded,
     elevations,
     segments,
   });

@@ -1,6 +1,8 @@
 import distance from '@turf/distance';
 import features from '../features.json';
+import { Segment } from '../models/hike';
 import Graph from './Graph';
+import { decode, encode } from './path-utils';
 
 export type TrailColor = 'red' | 'blue' | 'green' | 'yellow' | 'black';
 
@@ -61,13 +63,24 @@ export type Route = {
   weatherSite: WeatherSite | null;
 };
 
-export type Segment = {
+export type PathSegment = {
   trails: number[];
   distance: number;
   time: number;
   ascent: number;
   descent: number;
   highestNode: Node | null;
+};
+
+export type RawPathSegment = {
+  distance: number;
+  time: number;
+  ascent: number;
+  descent: number;
+  highestNode: Node | null;
+  decodedArray: [number, number][];
+  elevations: number[];
+  segments: Segment[];
 };
 
 export default class PathFinder {
@@ -164,8 +177,8 @@ export default class PathFinder {
       for (let i = 0; i < routeNodes.length - 1; i++) {
         const node = routeNodes[i];
         const nextNode = routeNodes[i + 1];
-        let segment: Segment | null = null;
-        segment = this.findPath(node, nextNode);
+        let segment: PathSegment | null = null;
+        segment = this.findPath(node, nextNode, false) as PathSegment;
         if (segment) {
           route.trails.push(...segment.trails);
           route.distance += segment.distance;
@@ -210,7 +223,101 @@ export default class PathFinder {
     }
   }
 
-  findPath(startNode: Node, targetNode: Node) {
+  getRouteWithSegments(routeNodes: Node[]): {
+    route: Route;
+    segments: Segment[];
+    encoded: string;
+    elevations: number[];
+  } | null {
+    if (routeNodes.length > 0) {
+      const route: Route = {
+        name: {
+          start: routeNodes[0].name,
+          end: routeNodes[routeNodes.length - 1].name,
+        },
+        trails: [],
+        distance: 0,
+        time: 0,
+        ascent: 0,
+        descent: 0,
+        weatherSite: null,
+      };
+
+      let highestNode: Node | null = null;
+      const decodedArray = [];
+      const segments: Segment[] = [];
+      const elevations = [];
+
+      for (let i = 0; i < routeNodes.length - 1; i++) {
+        const node = routeNodes[i];
+        const nextNode = routeNodes[i + 1];
+        let segment = this.findPath(node, nextNode, true);
+        if (segment) {
+          let segmentRaw = segment as RawPathSegment;
+          route.distance += segment.distance;
+          route.time += segment.time;
+          route.ascent += segment.ascent;
+          route.descent += segment.descent;
+          segments.push(...segmentRaw.segments);
+          decodedArray.push(...segmentRaw.decodedArray);
+          elevations.push(...segmentRaw.elevations);
+
+          if (segment.highestNode) {
+            if (
+              !highestNode ||
+              segment.highestNode.elevation > highestNode?.elevation
+            ) {
+              highestNode = segment.highestNode;
+            }
+          }
+        } else return null;
+      }
+
+      segments.push({
+        name: routeNodes[routeNodes.length - 1].name,
+        color: [''],
+        distance: 0,
+        time: 0,
+        length: 0,
+      });
+
+      const encoded = encode(decodedArray);
+      const lastNode = routeNodes[routeNodes.length - 1];
+      if (
+        highestNode &&
+        (routeNodes[0].name === routeNodes[routeNodes.length - 1].name ||
+          routeNodes[0].elevation > lastNode.elevation ||
+          routeNodes[0].elevation > lastNode.elevation - 150)
+      ) {
+        route.weatherSite = {
+          id: highestNode.id,
+          name: highestNode.name,
+        };
+      } else {
+        route.weatherSite = {
+          id: lastNode.id,
+          name: lastNode.name,
+        };
+      }
+
+      console.log(route.weatherSite);
+
+      return {
+        route,
+        segments,
+        encoded,
+        elevations,
+      };
+    } else {
+      return null;
+    }
+  }
+
+  findPath(
+    startNode: Node,
+    targetNode: Node,
+    raw: boolean,
+  ): PathSegment | RawPathSegment | null {
     console.time('Search');
     let openSet: SegmentNode[] = [];
     const closedSet: SegmentNode[] = [];
@@ -241,7 +348,11 @@ export default class PathFinder {
       if (currentNode.id === targetNode.id) {
         console.timeEnd('Search');
         //   console.log(closedSet);
-        return this.retracePath(currentNode);
+        if (!raw) {
+          return this.retracePath(currentNode);
+        }
+        return this.retraceRawPath(currentNode);
+        // return this.retracePath(currentNode);
       }
 
       openSet = openSet.filter(
@@ -392,7 +503,7 @@ export default class PathFinder {
     return time;
   }
 
-  retracePath(current: SegmentNode): Segment {
+  retracePath(current: SegmentNode): PathSegment {
     const trailsIds = [];
     let temp = current;
 
@@ -474,6 +585,115 @@ export default class PathFinder {
       ascent: totalAscent,
       descent: totalDescent,
       highestNode,
+    };
+  }
+
+  retraceRawPath(current: SegmentNode): RawPathSegment {
+    const trailsIds = [];
+    let temp = current;
+
+    trailsIds.push(temp.trail_id);
+    while (temp.parent) {
+      if (temp.parent.trail_id != 0) {
+        trailsIds.push(temp.parent.trail_id);
+      }
+      temp = temp.parent;
+    }
+    trailsIds.reverse();
+
+    // console.log(path);
+
+    const route: Trail[] = [];
+    let highestNode: Node | null = null;
+    let decodedArray = [];
+    const elevations = [];
+    const segments: Segment[] = [];
+    let distance = 0;
+    let routeTime = 0;
+    let totalAscent = 0;
+    let totalDescent = 0;
+    trailsIds.forEach((id) => {
+      const trail = this.trails.get(id);
+      if (trail) {
+        route.push(trail as Trail);
+      }
+    });
+
+    //   console.log(route);
+    //   console.log(distance);
+    const start = temp;
+    const end = current;
+    for (let i = 0; i < route.length; i++) {
+      const trail = route[i];
+      const nextTrail = route[i + 1];
+
+      const nodeStart = this.nodes.get(trail.node_id.start);
+      const nodeEnd = this.nodes.get(trail.node_id.end);
+      if (nodeStart && nodeEnd) {
+        if (!highestNode) {
+          highestNode = nodeStart;
+        }
+
+        if (highestNode.elevation < nodeStart.elevation) {
+          highestNode = nodeStart;
+        }
+        if (highestNode.elevation < nodeEnd.elevation) {
+          highestNode = nodeEnd;
+        }
+      }
+
+      const startToEnd = this.getTrailDirection(trail, nextTrail, start, end);
+
+      const decoded = decode(trail.encoded);
+      decodedArray.push(...(startToEnd ? decoded : decoded.reverse()));
+      distance += trail.distance;
+      const time = this.getTrailTime(trail, startToEnd);
+      routeTime += time;
+      const [ascent, descent] = this.getTrailAscentAndDescent(
+        trail,
+        startToEnd,
+      );
+      totalAscent += ascent;
+      totalDescent += descent;
+      elevations.push(
+        ...(startToEnd
+          ? trail.elevation_profile
+          : [...trail.elevation_profile].reverse()),
+      );
+      const segment = {
+        name: startToEnd ? trail.name.start : trail.name.end,
+        color: trail.color,
+        distance: trail.distance,
+        time,
+        length: decoded.length,
+      };
+      segments.push(segment);
+
+      console.log(
+        trail.id,
+        startToEnd,
+        ascent,
+        totalAscent,
+        descent,
+        totalDescent,
+      );
+    }
+
+    //   console.log(routeTime);
+    //   console.log(`${Math.floor(routeTime / 60)}h${routeTime % 60}m`);
+    // return { trails: route, duration: routeTime, distance };
+    console.log('final', decodedArray);
+    console.log('final', encode(decodedArray));
+
+    return {
+      distance,
+      time: routeTime,
+      ascent: totalAscent,
+      descent: totalDescent,
+      highestNode,
+      decodedArray,
+      elevations,
+      segments,
     };
   }
 }
