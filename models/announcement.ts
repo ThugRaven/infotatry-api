@@ -3,11 +3,13 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface Announcement extends Document {
   type: string;
   title: string;
-  featureIds: number[];
+  featuresType: string;
+  featuresIds: number[];
   reason: string;
-  since: number | null;
-  until: number | null;
+  since: Date | null;
+  until: Date | null;
   description: string;
+  link: string | null;
   isClosed: boolean;
 }
 
@@ -21,7 +23,11 @@ const announcementSchema = new Schema<Announcement>(
       type: String,
       required: true,
     },
-    featureIds: {
+    featuresType: {
+      type: String,
+      required: true,
+    },
+    featuresIds: {
       type: [Number],
       required: true,
     },
@@ -30,16 +36,20 @@ const announcementSchema = new Schema<Announcement>(
       required: true,
     },
     since: {
-      type: Number,
-      required: true,
+      type: Date,
+      default: null,
     },
     until: {
-      type: Number,
-      required: true,
+      type: Date,
+      default: null,
     },
     description: {
       type: String,
       required: true,
+    },
+    link: {
+      type: String,
+      default: null,
     },
     isClosed: {
       type: Boolean,
