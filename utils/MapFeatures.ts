@@ -59,7 +59,7 @@ class MapFeatures {
                 announcement.until.getTime() >= Date.now())))
         ) {
           trail.closed = true;
-          console.log('Closed trail id: ', trail.id);
+          console.log('Closed trail id:', trail.id);
         }
       });
     });

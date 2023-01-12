@@ -1,7 +1,7 @@
 import distance from '@turf/distance';
-import features from '../features.json';
 import { Segment } from '../models/hike';
 import Graph from './Graph';
+import { mapFeatures } from './MapFeatures';
 import { decode, encode } from './path-utils';
 
 export type TrailColor = 'red' | 'blue' | 'green' | 'yellow' | 'black';
@@ -24,6 +24,7 @@ export type Trail = {
     end: number;
   };
   elevation_profile: number[];
+  closed: boolean;
 };
 
 export type Node = {
@@ -85,28 +86,14 @@ export type RawPathSegment = {
 
 export default class PathFinder {
   graph = new Graph();
-  nodes = new Map<number, Node>();
-  nodeNames = new Map<string, number>();
-  trails = new Map<number, Trail>();
 
   constructor() {
-    this.initializeFeatures();
     this.createGraph();
   }
 
-  initializeFeatures() {
-    features.nodes.forEach((node) => {
-      this.nodes.set(node.id, node);
-      this.nodeNames.set(node.name.trim().toLowerCase(), node.id);
-    });
-    features.trails.forEach((trail) =>
-      this.trails.set(trail.id, trail as Trail),
-    );
-  }
-
   createGraph() {
-    features.nodes.forEach((node) => this.graph.addVertex(node.id));
-    features.trails.forEach((trail) =>
+    mapFeatures.nodes.forEach((node) => this.graph.addVertex(node.id));
+    mapFeatures.trails.forEach((trail) =>
       this.graph.addEdge(
         {
           node_id: trail.node_id.start,
@@ -129,9 +116,9 @@ export default class PathFinder {
     const foundNodes: Node[] = [];
 
     names.forEach((name) => {
-      const nodeId = this.nodeNames.get(name.trim().toLowerCase());
+      const nodeId = mapFeatures.nodeNames.get(name.trim().toLowerCase());
       if (nodeId) {
-        const node = this.nodes.get(nodeId);
+        const node = mapFeatures.nodes.get(nodeId);
         if (node) {
           foundNodes.push(node);
         }
@@ -144,20 +131,26 @@ export default class PathFinder {
   }
 
   getFirstAndLastNode(names: string[]) {
-    const nodeStartId = this.nodeNames.get(names[0].trim().toLowerCase());
-    const nodeEndId = this.nodeNames.get(
+    const nodeStartId = mapFeatures.nodeNames.get(
+      names[0].trim().toLowerCase(),
+    );
+    const nodeEndId = mapFeatures.nodeNames.get(
       names[names.length - 2].trim().toLowerCase(),
     );
 
     const nodeStartName = nodeStartId
-      ? this.nodes.get(nodeStartId)?.name
+      ? mapFeatures.nodes.get(nodeStartId)?.name
       : undefined;
-    const nodeEndName = nodeEndId ? this.nodes.get(nodeEndId)?.name : undefined;
+    const nodeEndName = nodeEndId
+      ? mapFeatures.nodes.get(nodeEndId)?.name
+      : undefined;
 
     return { nodeStartName, nodeEndName };
   }
 
   getRoute(routeNodes: Node[]): Route | null {
+    console.log(mapFeatures.trails.get(17));
+
     if (routeNodes.length > 0) {
       const route: Route = {
         name: {
@@ -336,11 +329,20 @@ export default class PathFinder {
       let currentNode = openSet[0];
 
       for (let i = 0; i < openSet.length; i++) {
+        // const trail = mapFeatures.trails.get(openSet[i].trail_id);
+        // const isClosed = (trail && trail.closed) ?? false;
         if (
           openSet[i].fCost < currentNode.fCost ||
           (openSet[i].fCost === currentNode.fCost &&
             openSet[i].hCost < currentNode.hCost)
         ) {
+          // if (isClosed) {
+          //   console.log(
+          //     'trail skipped because of closure',
+          //     openSet[i].trail_id,
+          //   );
+          //   continue;
+          // }
           currentNode = openSet[i];
         }
       }
@@ -374,7 +376,7 @@ export default class PathFinder {
           parent: null,
         }));
 
-      const currentNodeLngLat = this.nodes.get(currentNode.id);
+      const currentNodeLngLat = mapFeatures.nodes.get(currentNode.id);
       if (currentNodeLngLat) {
         if (!neighbors) {
           return null;
@@ -387,7 +389,7 @@ export default class PathFinder {
                 node.id === neighbor.id && node.trail_id === neighbor.trail_id,
             )
           ) {
-            const neighborNodeLngLat = this.nodes.get(neighbor.id);
+            const neighborNodeLngLat = mapFeatures.nodes.get(neighbor.id);
             if (!neighborNodeLngLat) {
               return null;
             }
@@ -525,7 +527,7 @@ export default class PathFinder {
     let totalAscent = 0;
     let totalDescent = 0;
     trailsIds.forEach((id) => {
-      const trail = this.trails.get(id);
+      const trail = mapFeatures.trails.get(id);
       if (trail) {
         route.push(trail as Trail);
       }
@@ -539,8 +541,8 @@ export default class PathFinder {
       const trail = route[i];
       const nextTrail = route[i + 1];
 
-      const nodeStart = this.nodes.get(trail.node_id.start);
-      const nodeEnd = this.nodes.get(trail.node_id.end);
+      const nodeStart = mapFeatures.nodes.get(trail.node_id.start);
+      const nodeEnd = mapFeatures.nodes.get(trail.node_id.end);
       if (nodeStart && nodeEnd) {
         if (!highestNode) {
           highestNode = nodeStart;
@@ -613,7 +615,7 @@ export default class PathFinder {
     let totalAscent = 0;
     let totalDescent = 0;
     trailsIds.forEach((id) => {
-      const trail = this.trails.get(id);
+      const trail = mapFeatures.trails.get(id);
       if (trail) {
         route.push(trail as Trail);
       }
@@ -627,8 +629,8 @@ export default class PathFinder {
       const trail = route[i];
       const nextTrail = route[i + 1];
 
-      const nodeStart = this.nodes.get(trail.node_id.start);
-      const nodeEnd = this.nodes.get(trail.node_id.end);
+      const nodeStart = mapFeatures.nodes.get(trail.node_id.start);
+      const nodeEnd = mapFeatures.nodes.get(trail.node_id.end);
       if (nodeStart && nodeEnd) {
         if (!highestNode) {
           highestNode = nodeStart;
