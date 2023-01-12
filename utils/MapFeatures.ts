@@ -15,7 +15,7 @@ class MapFeatures {
 
   async initialize() {
     this.initializeFeatures();
-    await this.getAnnouncements();
+    await this.updateAnnouncements();
     this.setClosedTrails();
   }
 
@@ -29,7 +29,7 @@ class MapFeatures {
     );
   }
 
-  async getAnnouncements() {
+  async fetchAnnouncements() {
     console.log('Fetch announcements');
 
     const announcements = await Announcement.find({
@@ -37,8 +37,11 @@ class MapFeatures {
       isClosed: false,
     });
 
-    this.announcements = announcements;
     return announcements;
+  }
+
+  async updateAnnouncements() {
+    this.announcements = await this.fetchAnnouncements();
   }
 
   setClosedTrails() {
