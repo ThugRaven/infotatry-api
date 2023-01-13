@@ -149,6 +149,7 @@ router.post('/planned', isAuthenticated, async (req, res) => {
 
 router.post('/completed/:id', isAuthenticated, async (req, res) => {
   const id = req.params.id;
+  let avoidClosedTrails = req.body.avoidClosedTrails === true ? true : false;
   const user = (await req.user) as User;
 
   let plannedHike: HydratedDocument<PlannedHike> | null = null;
@@ -186,7 +187,10 @@ router.post('/completed/:id', isAuthenticated, async (req, res) => {
 
   const nodeNames = plannedHike.query.split(';');
   const nodes = pathFinder.getNodes(nodeNames);
-  const routeWithSegments = pathFinder.getRouteWithSegments(nodes);
+  const routeWithSegments = pathFinder.getRouteWithSegments(
+    nodes,
+    avoidClosedTrails,
+  );
   console.log('routeWithSegments', routeWithSegments);
 
   if (!routeWithSegments) {

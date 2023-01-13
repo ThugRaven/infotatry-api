@@ -316,7 +316,10 @@ export default class PathFinder {
     return routes;
   }
 
-  getRouteWithSegments(routeNodes: Node[]): {
+  getRouteWithSegments(
+    routeNodes: Node[],
+    avoidClosedTrails: boolean,
+  ): {
     route: Route;
     segments: Segment[];
     encoded: string;
@@ -344,8 +347,14 @@ export default class PathFinder {
       for (let i = 0; i < routeNodes.length - 1; i++) {
         const node = routeNodes[i];
         const nextNode = routeNodes[i + 1];
-        let segment = this.findPath(node, nextNode, true);
-        if (segment) {
+        const foundPath = this.findPath2(
+          node,
+          nextNode,
+          true,
+          avoidClosedTrails,
+        );
+        if (foundPath && foundPath.path) {
+          let segment = foundPath.path;
           let segmentRaw = segment as RawPathSegment;
           route.distance += segment.distance;
           route.time += segment.time;
