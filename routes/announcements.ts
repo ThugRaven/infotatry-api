@@ -28,7 +28,7 @@ router.post('/', isAuthenticated, async (req, res) => {
     reason,
     since,
     until,
-    link,
+    source,
     description,
   } = req.body;
 
@@ -47,7 +47,7 @@ router.post('/', isAuthenticated, async (req, res) => {
     reason,
     since,
     until,
-    link,
+    source,
     description,
   });
 

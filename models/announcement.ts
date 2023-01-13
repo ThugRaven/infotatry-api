@@ -9,7 +9,7 @@ export interface Announcement extends Document {
   since: Date | null;
   until: Date | null;
   description: string;
-  link: string | null;
+  source: string | null;
   isClosed: boolean;
 }
 
@@ -47,7 +47,7 @@ const announcementSchema = new Schema<Announcement>(
       type: String,
       required: true,
     },
-    link: {
+    source: {
       type: String,
       default: null,
     },
