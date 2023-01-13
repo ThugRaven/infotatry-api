@@ -148,76 +148,8 @@ export default class PathFinder {
     return { nodeStartName, nodeEndName };
   }
 
-  getRoute(routeNodes: Node[]): Route | null {
-    if (routeNodes.length > 0) {
-      const route: Route = {
-        name: {
-          start: routeNodes[0].name,
-          end: routeNodes[routeNodes.length - 1].name,
-        },
-        trails: [],
-        distance: 0,
-        time: 0,
-        ascent: 0,
-        descent: 0,
-        weatherSite: null,
-      };
-
-      let highestNode: Node | null = null;
-
-      for (let i = 0; i < routeNodes.length - 1; i++) {
-        const node = routeNodes[i];
-        const nextNode = routeNodes[i + 1];
-        let segment: PathSegment | null = null;
-        segment = this.findPath(node, nextNode, false) as PathSegment;
-        if (segment) {
-          route.trails.push(...segment.trails);
-          route.distance += segment.distance;
-          route.time += segment.time;
-          route.ascent += segment.ascent;
-          route.descent += segment.descent;
-
-          if (segment.highestNode) {
-            if (
-              !highestNode ||
-              segment.highestNode.elevation > highestNode?.elevation
-            ) {
-              highestNode = segment.highestNode;
-            }
-          }
-        } else return null;
-      }
-
-      const lastNode = routeNodes[routeNodes.length - 1];
-      if (
-        highestNode &&
-        (routeNodes[0].name === routeNodes[routeNodes.length - 1].name ||
-          routeNodes[0].elevation > lastNode.elevation ||
-          routeNodes[0].elevation > lastNode.elevation - 150)
-      ) {
-        route.weatherSite = {
-          id: highestNode.id,
-          name: highestNode.name,
-        };
-      } else {
-        route.weatherSite = {
-          id: lastNode.id,
-          name: lastNode.name,
-        };
-      }
-
-      console.log(route.weatherSite);
-
-      return route;
-    } else {
-      return null;
-    }
-  }
-
-  getRoutes(
-    routeNodes: Node[], // :Route | null
-  ) {
-    const MAX_PATH_FINDING_RETRIES = 3;
+  getRoutes(routeNodes: Node[]) {
+    const MAX_PATH_FINDING_RETRIES = 2;
     const routes: Route[] = [];
     let passedClosedTrail = false;
 
@@ -249,7 +181,7 @@ export default class PathFinder {
           const node = routeNodes[j];
           const nextNode = routeNodes[j + 1];
           let segment: PathSegment | null = null;
-          const foundPath = this.findPath2(
+          const foundPath = this.findPath(
             node,
             nextNode,
             false,
@@ -302,7 +234,6 @@ export default class PathFinder {
         }
 
         console.log(route.weatherSite);
-
         routes.push(route);
 
         if (!passedClosedTrail) {
@@ -347,7 +278,7 @@ export default class PathFinder {
       for (let i = 0; i < routeNodes.length - 1; i++) {
         const node = routeNodes[i];
         const nextNode = routeNodes[i + 1];
-        const foundPath = this.findPath2(
+        const foundPath = this.findPath(
           node,
           nextNode,
           true,
@@ -416,137 +347,6 @@ export default class PathFinder {
   }
 
   findPath(
-    startNode: Node,
-    targetNode: Node,
-    raw: boolean,
-  ): PathSegment | RawPathSegment | null {
-    console.time('Search');
-    let openSet: SegmentNode[] = [];
-    const closedSet: SegmentNode[] = [];
-
-    openSet.push({
-      id: startNode.id,
-      distance: 0,
-      trail_id: 0,
-      gCost: 0,
-      hCost: 0,
-      fCost: 0,
-      parent: null,
-    });
-
-    while (openSet.length > 0) {
-      let currentNode = openSet[0];
-
-      for (let i = 0; i < openSet.length; i++) {
-        // const trail = mapFeatures.trails.get(openSet[i].trail_id);
-        // const isClosed = (trail && trail.closed) ?? false;
-        if (
-          openSet[i].fCost < currentNode.fCost ||
-          (openSet[i].fCost === currentNode.fCost &&
-            openSet[i].hCost < currentNode.hCost)
-        ) {
-          // if (isClosed) {
-          //   console.log(
-          //     'trail skipped because of closure',
-          //     openSet[i].trail_id,
-          //   );
-          //   continue;
-          // }
-          currentNode = openSet[i];
-        }
-      }
-
-      if (currentNode.id === targetNode.id) {
-        console.timeEnd('Search');
-        //   console.log(closedSet);
-        if (!raw) {
-          return this.retracePath(currentNode).path;
-        }
-        return this.retraceRawPath(currentNode).path;
-        // return this.retracePath(currentNode);
-      }
-
-      openSet = openSet.filter(
-        (node) =>
-          node.id !== currentNode.id && node.trail_id !== currentNode.trail_id,
-      );
-      closedSet.push(currentNode);
-      // console.log('currentNode', currentNode);
-
-      const neighbors = this.graph.adjacencyList
-        .get(currentNode.id)
-        ?.map<SegmentNode>((node) => ({
-          id: node.node_id,
-          distance: node.distance,
-          trail_id: node.trail_id,
-          gCost: 0,
-          hCost: 0,
-          fCost: 0,
-          parent: null,
-        }));
-
-      const currentNodeLngLat = mapFeatures.nodes.get(currentNode.id);
-      if (currentNodeLngLat) {
-        if (!neighbors) {
-          return null;
-        }
-
-        neighbors.forEach((neighbor) => {
-          if (
-            !closedSet.find(
-              (node) =>
-                node.id === neighbor.id && node.trail_id === neighbor.trail_id,
-            )
-          ) {
-            const neighborNodeLngLat = mapFeatures.nodes.get(neighbor.id);
-            if (!neighborNodeLngLat) {
-              return null;
-            }
-
-            const costToNeighbor = currentNode.gCost + neighbor.distance;
-            //   console.log(costToNeighbor, neighbor.id, neighbor.gCost, neighbor);
-
-            if (
-              costToNeighbor < neighbor.gCost ||
-              !openSet.find(
-                (node) =>
-                  node.id === neighbor.id &&
-                  node.trail_id === neighbor.trail_id,
-              )
-            ) {
-              neighbor.gCost = costToNeighbor;
-              const distanceToEndNode = Math.floor(
-                distance(
-                  [neighborNodeLngLat.lng, neighborNodeLngLat.lat],
-                  [targetNode.lng, targetNode.lat],
-                  {
-                    units: 'meters',
-                  },
-                ),
-              );
-              neighbor.hCost = distanceToEndNode;
-              neighbor.fCost = costToNeighbor + distanceToEndNode;
-              neighbor.parent = currentNode;
-
-              if (
-                !openSet.find(
-                  (node) =>
-                    node.id === neighbor.id &&
-                    node.trail_id === neighbor.trail_id,
-                )
-              ) {
-                openSet.push(neighbor);
-                //   console.log('neighbor', neighbor);
-              }
-            }
-          }
-        });
-      }
-    }
-    return null;
-  }
-
-  findPath2(
     startNode: Node,
     targetNode: Node,
     raw: boolean,

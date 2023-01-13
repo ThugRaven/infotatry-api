@@ -32,9 +32,9 @@ router.get('/planned/:id', isAuthenticated, async (req, res) => {
 
       const nodeNames = hike.query.split(';');
       const nodes = pathFinder.getNodes(nodeNames);
-      const route = pathFinder.getRoute(nodes);
+      const route = pathFinder.getRoutes(nodes);
       if (route) {
-        return res.status(200).send(route);
+        return res.status(200).send(route[0]);
       }
     } catch (error) {
       if (error instanceof Error) {
