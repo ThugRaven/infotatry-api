@@ -55,10 +55,8 @@ class MapFeatures {
 
         if (
           trail &&
-          (!announcement.since ||
-            (announcement.since.getTime() <= Date.now() &&
-              (!announcement.until ||
-                announcement.until.getTime() >= Date.now())))
+          (!announcement.since || announcement.since.getTime() <= Date.now()) &&
+          (!announcement.until || announcement.until.getTime() >= Date.now())
         ) {
           this.closedTrails.add(id);
           console.log('Closed trail id:', trail.id);
