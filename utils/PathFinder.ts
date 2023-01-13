@@ -452,9 +452,9 @@ export default class PathFinder {
         console.timeEnd('Search');
         //   console.log(closedSet);
         if (!raw) {
-          return this.retracePath(currentNode);
+          return this.retracePath(currentNode).path;
         }
-        return this.retraceRawPath(currentNode);
+        return this.retraceRawPath(currentNode).path;
         // return this.retracePath(currentNode);
       }
 
@@ -550,7 +550,6 @@ export default class PathFinder {
     console.time('Search');
     let openSet: SegmentNode[] = [];
     const closedSet: SegmentNode[] = [];
-    let passedClosedTrail = false;
 
     openSet.push({
       id: startNode.id,
@@ -573,35 +572,24 @@ export default class PathFinder {
           (openSet[i].fCost === currentNode.fCost &&
             openSet[i].hCost < currentNode.hCost)
         ) {
-          if (isClosed) {
-            if (avoidClosedTrails) {
-              passedClosedTrail = false;
-              console.log('Skipped closed trail:', openSet[i].trail_id);
-              continue;
-            } else {
-              passedClosedTrail = true;
-            }
+          if (isClosed && avoidClosedTrails) {
+            console.log('Skipped closed trail:', openSet[i].trail_id);
+            continue;
           }
-          console.log(openSet[i].trail_id, passedClosedTrail);
-
           currentNode = openSet[i];
         }
       }
 
-      const trail = mapFeatures.trails.get(currentNode.trail_id);
-      const isClosed = (trail && trail.closed) ?? false;
       if (currentNode.id === targetNode.id) {
-        if (isClosed && !avoidClosedTrails) {
-          passedClosedTrail = true;
-        }
-
         console.timeEnd('Search');
         //   console.log(closedSet);
         if (!raw) {
-          return { path: this.retracePath(currentNode), passedClosedTrail };
+          const { path, passedClosedTrail } = this.retracePath(currentNode);
+          console.log('passedClosedTrail', passedClosedTrail);
+          return { path, passedClosedTrail };
         }
-        return { path: this.retraceRawPath(currentNode), passedClosedTrail };
-        // return this.retracePath(currentNode);
+        const { path, passedClosedTrail } = this.retraceRawPath(currentNode);
+        return { path, passedClosedTrail };
       }
 
       openSet = openSet.filter(
@@ -755,9 +743,13 @@ export default class PathFinder {
     return time;
   }
 
-  retracePath(current: SegmentNode): PathSegment {
+  retracePath(current: SegmentNode): {
+    path: PathSegment;
+    passedClosedTrail: boolean;
+  } {
     const trailsIds = [];
     let temp = current;
+    let passedClosedTrail = false;
 
     trailsIds.push(temp.trail_id);
     while (temp.parent) {
@@ -778,7 +770,11 @@ export default class PathFinder {
     let totalDescent = 0;
     trailsIds.forEach((id) => {
       const trail = mapFeatures.trails.get(id);
+      const isClosed = (trail && trail.closed) ?? false;
       if (trail) {
+        if (isClosed) {
+          passedClosedTrail = true;
+        }
         route.push(trail as Trail);
       }
     });
@@ -831,18 +827,25 @@ export default class PathFinder {
     //   console.log(`${Math.floor(routeTime / 60)}h${routeTime % 60}m`);
     // return { trails: route, duration: routeTime, distance };
     return {
-      trails: trailsIds,
-      distance,
-      time: routeTime,
-      ascent: totalAscent,
-      descent: totalDescent,
-      highestNode,
+      path: {
+        trails: trailsIds,
+        distance,
+        time: routeTime,
+        ascent: totalAscent,
+        descent: totalDescent,
+        highestNode,
+      },
+      passedClosedTrail,
     };
   }
 
-  retraceRawPath(current: SegmentNode): RawPathSegment {
+  retraceRawPath(current: SegmentNode): {
+    path: RawPathSegment;
+    passedClosedTrail: boolean;
+  } {
     const trailsIds = [];
     let temp = current;
+    let passedClosedTrail = false;
 
     trailsIds.push(temp.trail_id);
     while (temp.parent) {
@@ -866,7 +869,11 @@ export default class PathFinder {
     let totalDescent = 0;
     trailsIds.forEach((id) => {
       const trail = mapFeatures.trails.get(id);
+      const isClosed = (trail && trail.closed) ?? false;
       if (trail) {
+        if (isClosed) {
+          passedClosedTrail = true;
+        }
         route.push(trail as Trail);
       }
     });
@@ -938,14 +945,17 @@ export default class PathFinder {
     console.log('final', encode(decodedArray));
 
     return {
-      distance,
-      time: routeTime,
-      ascent: totalAscent,
-      descent: totalDescent,
-      highestNode,
-      decodedArray,
-      elevations,
-      segments,
+      path: {
+        distance,
+        time: routeTime,
+        ascent: totalAscent,
+        descent: totalDescent,
+        highestNode,
+        decodedArray,
+        elevations,
+        segments,
+      },
+      passedClosedTrail,
     };
   }
 }
