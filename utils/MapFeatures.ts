@@ -47,6 +47,7 @@ class MapFeatures {
 
   setClosedTrails() {
     console.log('All announcements', this.announcements);
+    this.closedTrails.clear();
 
     this.announcements.forEach((announcement) => {
       announcement.featuresIds.forEach((id) => {
