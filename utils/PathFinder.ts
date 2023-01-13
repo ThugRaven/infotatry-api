@@ -24,7 +24,6 @@ export type Trail = {
     end: number;
   };
   elevation_profile: number[];
-  closed: boolean;
 };
 
 export type Node = {
@@ -565,8 +564,7 @@ export default class PathFinder {
       let currentNode = openSet[0];
 
       for (let i = 0; i < openSet.length; i++) {
-        const trail = mapFeatures.trails.get(openSet[i].trail_id);
-        const isClosed = (trail && trail.closed) ?? false;
+        const isClosed = mapFeatures.closedTrails.has(openSet[i].trail_id);
         if (
           openSet[i].fCost < currentNode.fCost ||
           (openSet[i].fCost === currentNode.fCost &&
@@ -632,8 +630,7 @@ export default class PathFinder {
             const costToNeighbor = currentNode.gCost + neighbor.distance;
             //   console.log(costToNeighbor, neighbor.id, neighbor.gCost, neighbor);
 
-            const trail = mapFeatures.trails.get(neighbor.trail_id);
-            const isClosed = (trail && trail.closed) ?? false;
+            const isClosed = mapFeatures.closedTrails.has(neighbor.trail_id);
             if (
               ((avoidClosedTrails && !isClosed) || !avoidClosedTrails) &&
               (costToNeighbor < neighbor.gCost ||
@@ -770,7 +767,7 @@ export default class PathFinder {
     let totalDescent = 0;
     trailsIds.forEach((id) => {
       const trail = mapFeatures.trails.get(id);
-      const isClosed = (trail && trail.closed) ?? false;
+      const isClosed = mapFeatures.closedTrails.has(id);
       if (trail) {
         if (isClosed) {
           passedClosedTrail = true;
@@ -869,7 +866,7 @@ export default class PathFinder {
     let totalDescent = 0;
     trailsIds.forEach((id) => {
       const trail = mapFeatures.trails.get(id);
-      const isClosed = (trail && trail.closed) ?? false;
+      const isClosed = mapFeatures.closedTrails.has(id);
       if (trail) {
         if (isClosed) {
           passedClosedTrail = true;

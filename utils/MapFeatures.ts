@@ -6,6 +6,7 @@ class MapFeatures {
   nodes = new Map<number, Node>();
   nodeNames = new Map<string, number>();
   trails = new Map<number, Trail>();
+  closedTrails = new Set<number>();
   announcements: Announcement[] = [];
 
   constructor() {
@@ -58,7 +59,7 @@ class MapFeatures {
               (!announcement.until ||
                 announcement.until.getTime() >= Date.now())))
         ) {
-          trail.closed = true;
+          this.closedTrails.add(id);
           console.log('Closed trail id:', trail.id);
         }
       });
