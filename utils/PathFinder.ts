@@ -212,7 +212,12 @@ export default class PathFinder {
                 highestNode = segment.highestNode;
               }
             }
-          } else return null;
+          }
+        }
+
+        // Route not reachable with trail avoidance, skip
+        if (i > 0 && route.trails.length === 0) {
+          break;
         }
 
         const lastNode = routeNodes[routeNodes.length - 1];
