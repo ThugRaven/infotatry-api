@@ -115,4 +115,16 @@ router.put('/:id', async (req, res) => {
   });
 });
 
+router.delete('/:id', async (req, res) => {
+  const id = req.params.id;
+  const response = await Announcement.deleteOne({ _id: id });
+  console.log(response);
+
+  if (response.deletedCount) {
+    return res.status(200).send({ deleted: true });
+  }
+
+  return res.status(404).send({ message: 'Announcement not found' });
+});
+
 export default router;
