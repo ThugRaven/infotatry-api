@@ -13,7 +13,7 @@ router.get('/closures', async (req, res) => {
   return res.status(200).send(announcements);
 });
 
-router.get('/history', async (req, res) => {
+router.get('/all', async (req, res) => {
   const announcements = await Announcement.find();
 
   return res.status(200).send(announcements);
@@ -62,6 +62,22 @@ router.post('/', isAuthenticated, async (req, res) => {
       });
     }
   }
+});
+
+router.patch('/:id', async (req, res) => {
+  const id = req.params.id;
+  const announcement = await Announcement.findById(id);
+
+  if (announcement) {
+    announcement.isClosed = !announcement.isClosed;
+    const updatedAnnouncement = await announcement.save();
+
+    return res.status(200).send(updatedAnnouncement);
+  }
+
+  return res.status(404).send({
+    message: 'Announcement not found',
+  });
 });
 
 export default router;
