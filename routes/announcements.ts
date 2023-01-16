@@ -80,4 +80,39 @@ router.patch('/:id', async (req, res) => {
   });
 });
 
+router.put('/:id', async (req, res) => {
+  const id = req.params.id;
+  const {
+    type,
+    title,
+    featuresType,
+    featuresIds,
+    reason,
+    since,
+    until,
+    source,
+    description,
+  } = req.body;
+  const announcement = await Announcement.findById(id);
+
+  if (announcement) {
+    announcement.type = type;
+    announcement.title = title;
+    announcement.featuresType = featuresType;
+    announcement.featuresIds = featuresIds.split(',');
+    announcement.reason = reason;
+    announcement.since = since;
+    announcement.until = until;
+    announcement.source = source;
+    announcement.description = description;
+    const updatedAnnouncement = await announcement.save();
+
+    return res.status(200).send(updatedAnnouncement);
+  }
+
+  return res.status(404).send({
+    message: 'Announcement not found',
+  });
+});
+
 export default router;
