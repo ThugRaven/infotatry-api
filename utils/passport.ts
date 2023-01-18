@@ -20,6 +20,15 @@ export function initializePassport(
       return done(null, false, { message: 'Provider' });
     }
 
+    if (
+      user.ban.duration &&
+      user.ban.bannedAt &&
+      user.ban.bannedAt.getTime() + user.ban.duration > Date.now()
+    ) {
+      console.log('banned');
+      return done(null, false, { message: 'User banned' });
+    }
+
     try {
       if (await comparePasswords(user.password, password)) {
         console.log('login');
