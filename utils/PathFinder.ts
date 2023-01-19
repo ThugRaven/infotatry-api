@@ -24,6 +24,7 @@ export type Trail = {
     end: number;
   };
   elevation_profile: number[];
+  direction: string;
 };
 
 export type Node = {
