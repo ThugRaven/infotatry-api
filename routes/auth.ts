@@ -57,6 +57,24 @@ export const isAuthenticated = (
   res.status(401).send({ message: 'Unauthorized' });
 };
 
+export const isAuthenticatedWithRoles = (neededRoles = ['']) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (req.isAuthenticated()) {
+      const user = (await req.user) as User;
+      if (neededRoles.every((role) => user.roles.includes(role))) {
+        console.log('User authenticated with sufficient roles');
+        return next();
+      }
+
+      console.log('User not authenticated due to insufficient permissions');
+      return res.status(401).send({ message: 'Insufficient permissions' });
+    }
+
+    console.log('User not authenticated');
+    res.status(401).send({ message: 'Unauthorized' });
+  };
+};
+
 router.post('/logout', isAuthenticated, (req, res, next) => {
   req.logout((err) => {
     if (err) {
