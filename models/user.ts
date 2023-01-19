@@ -11,6 +11,7 @@ export interface User extends Document {
   email: string;
   password?: string;
   image?: string;
+  roles: string[];
   ban: Ban;
 }
 
@@ -30,6 +31,10 @@ const userSchema = new Schema<User>(
     },
     image: {
       type: String,
+    },
+    roles: {
+      type: [String],
+      default: ['user'],
     },
     ban: {
       duration: {
