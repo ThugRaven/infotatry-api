@@ -38,8 +38,9 @@ export type Node = {
 
 type SegmentNode = {
   id: number;
-  distance: number;
   trail_id: number;
+  distance: number;
+  passable: boolean;
   gCost: number;
   hCost: number;
   fCost: number;
@@ -100,11 +101,19 @@ export default class PathFinder {
           node_id: trail.node_id.start,
           trail_id: trail.id,
           distance: trail.distance,
+          passable:
+            trail.direction === 'end-start' || trail.direction === 'two-way'
+              ? true
+              : false,
         },
         {
           node_id: trail.node_id.end,
           trail_id: trail.id,
           distance: trail.distance,
+          passable:
+            trail.direction === 'start-end' || trail.direction === 'two-way'
+              ? true
+              : false,
         },
       ),
     );
@@ -367,8 +376,9 @@ export default class PathFinder {
 
     openSet.push({
       id: startNode.id,
-      distance: 0,
       trail_id: 0,
+      distance: 0,
+      passable: true,
       gCost: 0,
       hCost: 0,
       fCost: 0,
@@ -387,6 +397,11 @@ export default class PathFinder {
         ) {
           if (isClosed && avoidClosedTrails) {
             console.log('Skipped closed trail:', openSet[i].trail_id);
+            continue;
+          }
+
+          if (!openSet[i].passable) {
+            console.log('Skipped due to impassability');
             continue;
           }
           currentNode = openSet[i];
@@ -416,8 +431,9 @@ export default class PathFinder {
         .get(currentNode.id)
         ?.map<SegmentNode>((node) => ({
           id: node.node_id,
-          distance: node.distance,
           trail_id: node.trail_id,
+          distance: node.distance,
+          passable: node.passable,
           gCost: 0,
           hCost: 0,
           fCost: 0,
@@ -447,6 +463,7 @@ export default class PathFinder {
 
             const isClosed = mapFeatures.closedTrails.has(neighbor.trail_id);
             if (
+              neighbor.passable &&
               ((avoidClosedTrails && !isClosed) || !avoidClosedTrails) &&
               (costToNeighbor < neighbor.gCost ||
                 !openSet.find(

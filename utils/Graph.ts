@@ -2,6 +2,7 @@ export type Edge = {
   node_id: number;
   trail_id: number;
   distance: number;
+  passable: boolean;
 };
 
 export default class Graph {
