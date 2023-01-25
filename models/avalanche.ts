@@ -2,15 +2,18 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface Avalanche extends Document {
   danger: number;
+  increase: boolean;
   am: {
     elevation?: number;
     danger: number[];
+    increase: boolean;
     problem?: string;
     aspect?: string;
   };
   pm: {
     elevation?: number;
     danger: number[];
+    increase: boolean;
     problem?: string;
     aspect?: string;
   };
@@ -24,6 +27,10 @@ const avalancheSchema = new Schema<Avalanche>(
       type: Number,
       required: true,
     },
+    increase: {
+      type: Boolean,
+      default: false,
+    },
     am: {
       elevation: {
         type: Number,
@@ -31,6 +38,10 @@ const avalancheSchema = new Schema<Avalanche>(
       danger: {
         type: [Number],
         required: true,
+      },
+      increase: {
+        type: Boolean,
+        default: false,
       },
       problem: {
         type: String,
@@ -46,6 +57,10 @@ const avalancheSchema = new Schema<Avalanche>(
       danger: {
         type: [Number],
         required: true,
+      },
+      increase: {
+        type: Boolean,
+        default: false,
       },
       problem: {
         type: String,

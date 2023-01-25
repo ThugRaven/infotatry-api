@@ -19,12 +19,13 @@ router.get('/all', isAuthenticatedWithRoles(['admin']), async (req, res) => {
 });
 
 router.post('/', isAuthenticatedWithRoles(['admin']), async (req, res) => {
-  const { danger, am, pm, forecast, until } = req.body;
+  const { danger, increase, am, pm, forecast, until } = req.body;
 
   console.log(req.body);
 
   const avalanche = new Avalanche({
     danger,
+    increase,
     am,
     pm,
     forecast,
@@ -46,12 +47,13 @@ router.post('/', isAuthenticatedWithRoles(['admin']), async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const id = req.params.id;
-  const { danger, am, pm, forecast, until } = req.body;
+  const { danger, increase, am, pm, forecast, until } = req.body;
 
   const avalanche = await Avalanche.findById(id);
 
   if (avalanche) {
     avalanche.danger = danger;
+    avalanche.increase = increase;
     avalanche.am = am;
     avalanche.pm = pm;
     avalanche.forecast = forecast;
