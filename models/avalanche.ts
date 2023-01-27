@@ -6,16 +6,16 @@ export interface Avalanche extends Document {
   am: {
     elevation?: number;
     danger: number[];
-    increase: boolean;
-    problem?: string;
-    aspect?: string;
+    increase: boolean[];
+    problem: string[];
+    aspect: string[];
   };
   pm: {
     elevation?: number;
     danger: number[];
-    increase: boolean;
-    problem?: string;
-    aspect?: string;
+    increase: boolean[];
+    problem: string[];
+    aspect: string[];
   };
   forecast: number;
   until: Date;
@@ -40,14 +40,14 @@ const avalancheSchema = new Schema<Avalanche>(
         required: true,
       },
       increase: {
-        type: Boolean,
+        type: [Boolean],
         default: false,
       },
       problem: {
-        type: String,
+        type: [String],
       },
       aspect: {
-        type: String,
+        type: [String],
       },
     },
     pm: {
@@ -59,14 +59,14 @@ const avalancheSchema = new Schema<Avalanche>(
         required: true,
       },
       increase: {
-        type: Boolean,
+        type: [Boolean],
         default: false,
       },
       problem: {
-        type: String,
+        type: [String],
       },
       aspect: {
-        type: String,
+        type: [String],
       },
     },
     forecast: {
