@@ -1,6 +1,6 @@
 import express from 'express';
 import { Announcement } from '../models/announcement';
-import { isAuthenticated } from './auth';
+import { isAuthenticatedWithRoles } from './auth';
 
 const router = express.Router();
 
@@ -13,13 +13,13 @@ router.get('/closures', async (req, res) => {
   return res.status(200).send(announcements);
 });
 
-router.get('/all', async (req, res) => {
+router.get('/all', isAuthenticatedWithRoles(['admin']), async (req, res) => {
   const announcements = await Announcement.find();
 
   return res.status(200).send(announcements);
 });
 
-router.post('/', isAuthenticated, async (req, res) => {
+router.post('/', isAuthenticatedWithRoles(['admin']), async (req, res) => {
   const {
     type,
     title,
