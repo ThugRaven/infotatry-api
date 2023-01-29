@@ -66,6 +66,15 @@ router.post('/change_password', isAuthenticated, async (req, res) => {
   const user = (await req.user) as User;
   const currentPassword = req.body.password.current;
   const newPassword = req.body.password.new;
+  const confirmPassword = req.body.password.confirm;
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return res.status(400).send({ message: 'Missing parameters' });
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).send({ message: 'Passwords do not match' });
+  }
 
   if (!user.password) {
     return res.status(404).send({ message: "User doesn't have a password" });
