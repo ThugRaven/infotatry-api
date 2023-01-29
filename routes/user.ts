@@ -1,6 +1,7 @@
 import express from 'express';
 import { CompletedHike, PlannedHike } from '../models/hike';
 import { User } from '../models/user';
+import { comparePasswords, hashPassword } from '../utils/password-utils';
 import { getPaginationValues } from '../utils/utils';
 import { isAuthenticated } from './auth';
 
@@ -59,6 +60,28 @@ router.get('/hikes/completed', isAuthenticated, async (req, res) => {
     .limit(pageSize);
 
   return res.status(200).send({ page, pageSize, count, data: completedHikes });
+});
+
+router.post('/change_password', isAuthenticated, async (req, res) => {
+  const user = (await req.user) as User;
+  const currentPassword = req.body.password.current;
+  const newPassword = req.body.password.new;
+
+  if (!user.password) {
+    return res.status(404).send({ message: "User doesn't have a password" });
+  }
+
+  if (await comparePasswords(user.password, currentPassword)) {
+    if (await comparePasswords(user.password, newPassword)) {
+      return res.status(400).send({ message: 'Password is the same' });
+    }
+    const hashedPassword = await hashPassword(newPassword);
+    user.password = hashedPassword;
+    const updatedUser = await user.save();
+    return res.status(200).send(updatedUser);
+  } else {
+    return res.status(403).send({ message: 'Incorrect password' });
+  }
 });
 
 export default router;
