@@ -62,6 +62,7 @@ export type Route = {
   time: number;
   ascent: number;
   descent: number;
+  type: 'normal' | 'closed' | 'shortest';
   weatherSite: WeatherSite | null;
 };
 
@@ -177,6 +178,7 @@ export default class PathFinder {
           time: 0,
           ascent: 0,
           descent: 0,
+          type: 'shortest',
           weatherSite: null,
         };
 
@@ -213,6 +215,11 @@ export default class PathFinder {
             route.time += segment.time;
             route.ascent += segment.ascent;
             route.descent += segment.descent;
+            route.type = passedClosedTrail
+              ? 'closed'
+              : j > 0
+              ? 'normal'
+              : 'shortest';
 
             if (segment.highestNode) {
               if (
@@ -282,6 +289,7 @@ export default class PathFinder {
         time: 0,
         ascent: 0,
         descent: 0,
+        type: 'shortest',
         weatherSite: null,
       };
 
