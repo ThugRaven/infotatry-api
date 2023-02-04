@@ -52,12 +52,18 @@ type WeatherSite = {
   name: string;
 };
 
+type TrailSegment = {
+  colors: TrailColor[];
+  distance: number;
+};
+
 export type Route = {
   name: {
     start: string;
     end: string;
   };
   trails: number[];
+  segments?: TrailSegment[];
   distance: number;
   time: number;
   ascent: number;
@@ -68,6 +74,7 @@ export type Route = {
 
 export type PathSegment = {
   trails: number[];
+  segments?: TrailSegment[];
   distance: number;
   time: number;
   ascent: number;
@@ -159,7 +166,7 @@ export default class PathFinder {
     return { nodeStartName, nodeEndName };
   }
 
-  getRoutes(routeNodes: Node[]) {
+  getRoutes(routeNodes: Node[], withSegments = false) {
     const MAX_PATH_FINDING_RETRIES = 2;
     const routes: Route[] = [];
     let passedClosedTrail = false;
@@ -174,6 +181,7 @@ export default class PathFinder {
             end: routeNodes[routeNodes.length - 1].name,
           },
           trails: [],
+          segments: [],
           distance: 0,
           time: 0,
           ascent: 0,
@@ -198,6 +206,7 @@ export default class PathFinder {
             nextNode,
             false,
             i > 0 ? true : false,
+            withSegments,
           );
 
           if (foundPath) {
@@ -220,6 +229,10 @@ export default class PathFinder {
               : j > 0
               ? 'normal'
               : 'shortest';
+
+            if (withSegments && segment.segments) {
+              route.segments?.push(...segment.segments);
+            }
 
             if (segment.highestNode) {
               if (
@@ -374,6 +387,7 @@ export default class PathFinder {
     targetNode: Node,
     raw: boolean,
     avoidClosedTrails: boolean,
+    withSegments = false,
   ): {
     path: PathSegment | RawPathSegment;
     passedClosedTrail: boolean;
@@ -420,7 +434,10 @@ export default class PathFinder {
         console.timeEnd('Search');
         //   console.log(closedSet);
         if (!raw) {
-          const { path, passedClosedTrail } = this.retracePath(currentNode);
+          const { path, passedClosedTrail } = this.retracePath(
+            currentNode,
+            withSegments,
+          );
           console.log('passedClosedTrail', passedClosedTrail);
           return { path, passedClosedTrail };
         }
@@ -580,7 +597,10 @@ export default class PathFinder {
     return time;
   }
 
-  retracePath(current: SegmentNode): {
+  retracePath(
+    current: SegmentNode,
+    withSegments = false,
+  ): {
     path: PathSegment;
     passedClosedTrail: boolean;
   } {
@@ -620,6 +640,7 @@ export default class PathFinder {
     //   console.log(distance);
     const start = temp;
     const end = current;
+    const segments: TrailSegment[] = [];
     for (let i = 0; i < route.length; i++) {
       const trail = route[i];
       const nextTrail = route[i + 1];
@@ -649,6 +670,9 @@ export default class PathFinder {
       );
       totalAscent += ascent;
       totalDescent += descent;
+      if (withSegments) {
+        segments.push({ colors: trail.color, distance: trail.distance });
+      }
 
       console.log(
         trail.id,
@@ -666,6 +690,7 @@ export default class PathFinder {
     return {
       path: {
         trails: trailsIds,
+        segments: segments,
         distance,
         time: routeTime,
         ascent: totalAscent,

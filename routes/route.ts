@@ -12,7 +12,7 @@ router.get('/:query', (req, res) => {
 
   if (nodes.length > 1) {
     // const route = getRoute(graph, nodes);
-    const route = pathFinder.getRoutes(nodes);
+    const route = pathFinder.getRoutes(nodes, true);
     if (route) {
       return res.status(200).send(route);
     }
