@@ -5,9 +5,10 @@ import { isAuthenticatedWithRoles } from './auth';
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const avalanches = await Avalanche.findOne({
-    until: { $gt: Date.now() },
-  });
+  // const avalanches = await Avalanche.findOne({
+  //   until: { $gt: Date.now() },
+  // });
+  const avalanches = await Avalanche.find().limit(2).sort({ until: -1 });
 
   return res.status(200).send(avalanches);
 });
