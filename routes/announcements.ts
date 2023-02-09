@@ -64,7 +64,7 @@ router.post('/', isAuthenticatedWithRoles(['admin']), async (req, res) => {
   }
 });
 
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', isAuthenticatedWithRoles(['admin']), async (req, res) => {
   const id = req.params.id;
   const announcement = await Announcement.findById(id);
 
@@ -80,7 +80,7 @@ router.patch('/:id', async (req, res) => {
   });
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', isAuthenticatedWithRoles(['admin']), async (req, res) => {
   const id = req.params.id;
   const {
     type,
@@ -115,7 +115,7 @@ router.put('/:id', async (req, res) => {
   });
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', isAuthenticatedWithRoles(['admin']), async (req, res) => {
   const id = req.params.id;
   const response = await Announcement.deleteOne({ _id: id });
   console.log(response);

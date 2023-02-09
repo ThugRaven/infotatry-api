@@ -46,7 +46,7 @@ router.post('/', isAuthenticatedWithRoles(['admin']), async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', isAuthenticatedWithRoles(['admin']), async (req, res) => {
   const id = req.params.id;
   const { danger, increase, am, pm, forecast, until } = req.body;
 
@@ -69,7 +69,7 @@ router.put('/:id', async (req, res) => {
   });
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', isAuthenticatedWithRoles(['admin']), async (req, res) => {
   const id = req.params.id;
   const response = await Avalanche.deleteOne({ _id: id });
   console.log(response);
