@@ -53,8 +53,10 @@ type WeatherSite = {
 };
 
 type TrailSegment = {
+  name: string;
   colors: TrailColor[];
   distance: number;
+  time: number;
 };
 
 export type Route = {
@@ -243,6 +245,15 @@ export default class PathFinder {
               }
             }
           }
+        }
+
+        if (withSegments) {
+          route.segments?.push({
+            name: routeNodes[routeNodes.length - 1].name,
+            colors: [],
+            distance: 0,
+            time: 0,
+          });
         }
 
         // Route not reachable with trail avoidance, skip
@@ -663,7 +674,8 @@ export default class PathFinder {
       const startToEnd = this.getTrailDirection(trail, nextTrail, start, end);
 
       distance += trail.distance;
-      routeTime += this.getTrailTime(trail, startToEnd);
+      const time = this.getTrailTime(trail, startToEnd);
+      routeTime += time;
       const [ascent, descent] = this.getTrailAscentAndDescent(
         trail,
         startToEnd,
@@ -671,7 +683,12 @@ export default class PathFinder {
       totalAscent += ascent;
       totalDescent += descent;
       if (withSegments) {
-        segments.push({ colors: trail.color, distance: trail.distance });
+        segments.push({
+          name: startToEnd ? trail.name.start : trail.name.end,
+          colors: trail.color,
+          distance: trail.distance,
+          time: time,
+        });
       }
 
       console.log(
