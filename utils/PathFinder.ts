@@ -57,6 +57,7 @@ type TrailSegment = {
   colors: TrailColor[];
   distance: number;
   time: number;
+  closed: boolean;
 };
 
 export type Route = {
@@ -253,6 +254,7 @@ export default class PathFinder {
             colors: [],
             distance: 0,
             time: 0,
+            closed: false,
           });
         }
 
@@ -630,7 +632,10 @@ export default class PathFinder {
 
     // console.log(path);
 
-    const route: Trail[] = [];
+    const route: {
+      trail: Trail;
+      closed: boolean;
+    }[] = [];
     let highestNode: Node | null = null;
     let distance = 0;
     let routeTime = 0;
@@ -643,7 +648,7 @@ export default class PathFinder {
         if (isClosed) {
           passedClosedTrail = true;
         }
-        route.push(trail as Trail);
+        route.push({ trail: trail as Trail, closed: isClosed });
       }
     });
 
@@ -653,8 +658,8 @@ export default class PathFinder {
     const end = current;
     const segments: TrailSegment[] = [];
     for (let i = 0; i < route.length; i++) {
-      const trail = route[i];
-      const nextTrail = route[i + 1];
+      const trail = route[i].trail;
+      const nextTrail = route[i + 1]?.trail;
 
       const nodeStart = mapFeatures.nodes.get(trail.node_id.start);
       const nodeEnd = mapFeatures.nodes.get(trail.node_id.end);
@@ -688,6 +693,7 @@ export default class PathFinder {
           colors: trail.color,
           distance: trail.distance,
           time: time,
+          closed: route[i].closed,
         });
       }
 
@@ -707,7 +713,7 @@ export default class PathFinder {
     return {
       path: {
         trails: trailsIds,
-        segments: segments,
+        segments,
         distance,
         time: routeTime,
         ascent: totalAscent,
