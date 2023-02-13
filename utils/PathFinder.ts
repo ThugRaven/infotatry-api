@@ -58,6 +58,7 @@ type TrailSegment = {
   distance: number;
   time: number;
   closed: boolean;
+  type: string;
 };
 
 export type Route = {
@@ -255,6 +256,7 @@ export default class PathFinder {
             distance: 0,
             time: 0,
             closed: false,
+            type: routeNodes[routeNodes.length - 1].type,
           });
         }
 
@@ -663,17 +665,19 @@ export default class PathFinder {
 
       const nodeStart = mapFeatures.nodes.get(trail.node_id.start);
       const nodeEnd = mapFeatures.nodes.get(trail.node_id.end);
-      if (nodeStart && nodeEnd) {
-        if (!highestNode) {
-          highestNode = nodeStart;
-        }
+      if (!nodeStart || !nodeEnd) {
+        break;
+      }
 
-        if (highestNode.elevation < nodeStart.elevation) {
-          highestNode = nodeStart;
-        }
-        if (highestNode.elevation < nodeEnd.elevation) {
-          highestNode = nodeEnd;
-        }
+      if (!highestNode) {
+        highestNode = nodeStart;
+      }
+
+      if (highestNode.elevation < nodeStart.elevation) {
+        highestNode = nodeStart;
+      }
+      if (highestNode.elevation < nodeEnd.elevation) {
+        highestNode = nodeEnd;
       }
 
       const startToEnd = this.getTrailDirection(trail, nextTrail, start, end);
@@ -694,6 +698,7 @@ export default class PathFinder {
           distance: trail.distance,
           time: time,
           closed: route[i].closed,
+          type: startToEnd ? nodeStart?.type : nodeEnd?.type,
         });
       }
 
