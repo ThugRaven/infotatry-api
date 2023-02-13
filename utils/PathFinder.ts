@@ -59,6 +59,8 @@ type TrailSegment = {
   time: number;
   closed: boolean;
   type: string;
+  node_id: number;
+  trail_id: number;
 };
 
 export type Route = {
@@ -257,6 +259,8 @@ export default class PathFinder {
             time: 0,
             closed: false,
             type: routeNodes[routeNodes.length - 1].type,
+            node_id: routeNodes[routeNodes.length - 1].id,
+            trail_id: -1,
           });
         }
 
@@ -698,7 +702,9 @@ export default class PathFinder {
           distance: trail.distance,
           time: time,
           closed: route[i].closed,
-          type: startToEnd ? nodeStart?.type : nodeEnd?.type,
+          type: startToEnd ? nodeStart.type : nodeEnd.type,
+          node_id: startToEnd ? trail.node_id.start : trail.node_id.end,
+          trail_id: trail.id,
         });
       }
 
