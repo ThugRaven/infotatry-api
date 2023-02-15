@@ -13,6 +13,12 @@ router.get('/', async (req, res) => {
   return res.status(200).send(avalanches);
 });
 
+router.get('/week', async (req, res) => {
+  const avalanches = await Avalanche.find().limit(9).sort({ until: -1 });
+
+  return res.status(200).send(avalanches);
+});
+
 router.get('/all', isAuthenticatedWithRoles(['admin']), async (req, res) => {
   const avalanches = await Avalanche.find();
 
