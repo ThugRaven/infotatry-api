@@ -159,7 +159,7 @@ export default class PathFinder {
       names[0].trim().toLowerCase(),
     );
     const nodeEndId = mapFeatures.nodeNames.get(
-      names[names.length - 2].trim().toLowerCase(),
+      names[names.length - 1].trim().toLowerCase(),
     );
 
     const nodeStartName = nodeStartId
