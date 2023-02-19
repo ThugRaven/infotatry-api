@@ -30,6 +30,23 @@ router.get('/hikes/count', isAuthenticated, async (req, res) => {
   return res.status(200).send({ plannedHikes, completedHikes });
 });
 
+router.get('/hikes/last', isAuthenticated, async (req, res) => {
+  const user = (await req.user) as User;
+
+  const plannedHikes = await PlannedHike.find({
+    userId: user.id,
+  })
+    .sort({ createdAt: -1 })
+    .limit(5);
+  const completedHikes = await CompletedHike.find({
+    userId: user.id,
+  })
+    .sort({ createdAt: -1 })
+    .limit(5);
+
+  return res.status(200).send({ plannedHikes, completedHikes });
+});
+
 router.get('/hikes/planned', isAuthenticated, async (req, res) => {
   const user = (await req.user) as User;
   const queryPage = req.query.page?.toString();
