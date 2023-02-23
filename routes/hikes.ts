@@ -1,7 +1,8 @@
 import express from 'express';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { CompletedHike, PlannedHike } from '../models/hike';
-import { User } from '../models/user';
+import { User, UserStats } from '../models/user';
+import { db } from '../src/index';
 import PathFinder from '../utils/PathFinder';
 import { isAuthenticated } from './auth';
 
@@ -221,8 +222,31 @@ router.post('/completed/:id', isAuthenticated, async (req, res) => {
     segments,
   });
 
+  const session = await db.startSession();
+  session.startTransaction();
+
+  if (!user.stats) {
+    const newUserStats = new UserStats({
+      time: route.time,
+      distance: route.distance,
+      ascent: route.ascent,
+      descent: route.descent,
+    });
+
+    user.stats = newUserStats;
+  } else {
+    user.stats.time += route.time;
+    user.stats.distance += route.distance;
+    user.stats.ascent += route.ascent;
+    user.stats.descent += route.descent;
+  }
+
   try {
-    const hike = await completedHike.save();
+    const hike = await completedHike.save({ session });
+    const updatedUser = await user.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
     return res.status(201).send(hike);
   } catch (error) {
     if (error instanceof Error) {
@@ -231,6 +255,8 @@ router.post('/completed/:id', isAuthenticated, async (req, res) => {
         message: error.message,
       });
     }
+    await session.abortTransaction();
+    session.endSession();
   }
 });
 

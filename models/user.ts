@@ -6,6 +6,13 @@ export type Ban = {
   reason?: string;
 };
 
+export interface UserStats {
+  time: number;
+  distance: number;
+  ascent: number;
+  descent: number;
+}
+
 export interface User extends Document {
   name: string;
   email: string;
@@ -13,7 +20,30 @@ export interface User extends Document {
   image?: string;
   roles: string[];
   ban: Ban;
+  stats: UserStats;
 }
+
+const userStatsSchema = new mongoose.Schema(
+  {
+    time: {
+      type: Number,
+      default: 0,
+    },
+    distance: {
+      type: Number,
+      default: 0,
+    },
+    ascent: {
+      type: Number,
+      default: 0,
+    },
+    descent: {
+      type: Number,
+      default: 0,
+    },
+  },
+  { autoCreate: false, _id: false },
+);
 
 const userSchema = new Schema<User>(
   {
@@ -50,8 +80,15 @@ const userSchema = new Schema<User>(
         default: null,
       },
     },
+    stats: {
+      type: userStatsSchema,
+    },
   },
   { timestamps: true, autoIndex: false },
 );
 
+export const UserStats = mongoose.model<UserStats>(
+  'UserStats',
+  userStatsSchema,
+);
 export const User = mongoose.model<User>('User', userSchema);

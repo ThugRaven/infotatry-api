@@ -25,7 +25,7 @@ const app = express();
 mongoose.set('strictQuery', false);
 mongoose.set('debug', true);
 mongoose.connect(process.env.DB_URL!);
-const db = mongoose.connection;
+export const db = mongoose.connection;
 
 db.on('error', (error) => console.error(error));
 db.once('open', () => console.log('Server connected to the database'));
