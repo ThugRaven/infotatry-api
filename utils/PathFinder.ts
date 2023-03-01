@@ -270,12 +270,7 @@ export default class PathFinder {
         }
 
         const lastNode = routeNodes[routeNodes.length - 1];
-        if (
-          highestNode &&
-          (routeNodes[0].name === routeNodes[routeNodes.length - 1].name ||
-            routeNodes[0].elevation > lastNode.elevation ||
-            routeNodes[0].elevation > lastNode.elevation - 150)
-        ) {
+        if (highestNode) {
           route.weatherSite = {
             id: highestNode.id,
             name: highestNode.name,
@@ -371,12 +366,7 @@ export default class PathFinder {
 
       const encoded = encode(decodedArray);
       const lastNode = routeNodes[routeNodes.length - 1];
-      if (
-        highestNode &&
-        (routeNodes[0].name === routeNodes[routeNodes.length - 1].name ||
-          routeNodes[0].elevation > lastNode.elevation ||
-          routeNodes[0].elevation > lastNode.elevation - 150)
-      ) {
+      if (highestNode) {
         route.weatherSite = {
           id: highestNode.id,
           name: highestNode.name,
