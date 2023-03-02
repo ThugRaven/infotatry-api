@@ -106,10 +106,12 @@ const completedhikeSchema = new mongoose.Schema(
       start: {
         type: String,
         default: '',
+        required: true,
       },
       end: {
         type: String,
         default: '',
+        required: true,
       },
     },
     date: {
@@ -125,22 +127,27 @@ const completedhikeSchema = new mongoose.Schema(
     distance: {
       type: Number,
       default: -1,
+      required: true,
     },
     time: {
       type: Number,
       default: -1,
+      required: true,
     },
     ascent: {
       type: Number,
       default: -1,
+      required: true,
     },
     descent: {
       type: Number,
       default: -1,
+      required: true,
     },
     encoded: {
       type: String,
       default: '',
+      required: true,
     },
     elevations: {
       type: [Number],

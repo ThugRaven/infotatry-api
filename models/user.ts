@@ -28,18 +28,22 @@ const userStatsSchema = new mongoose.Schema(
     time: {
       type: Number,
       default: 0,
+      required: true,
     },
     distance: {
       type: Number,
       default: 0,
+      required: true,
     },
     ascent: {
       type: Number,
       default: 0,
+      required: true,
     },
     descent: {
       type: Number,
       default: 0,
+      required: true,
     },
   },
   { autoCreate: false, _id: false },
@@ -82,6 +86,7 @@ const userSchema = new Schema<User>(
     },
     stats: {
       type: userStatsSchema,
+      required: true,
     },
   },
   { timestamps: true, autoIndex: false },

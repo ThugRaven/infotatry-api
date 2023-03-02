@@ -82,6 +82,12 @@ initializeGoogleStrategy(
       name: profile.displayName,
       email: profile.emails ? profile.emails[0].value : '',
       image: profile.photos ? profile.photos[0].value : '',
+      stats: {
+        time: 0,
+        distance: 0,
+        ascent: 0,
+        descent: 0,
+      },
     });
 
     try {
