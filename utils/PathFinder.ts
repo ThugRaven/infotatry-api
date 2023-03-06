@@ -54,7 +54,7 @@ type WeatherSite = {
 
 type TrailSegment = {
   name: string;
-  colors: TrailColor[];
+  color: TrailColor[];
   distance: number;
   time: number;
   closed: boolean;
@@ -254,7 +254,7 @@ export default class PathFinder {
         if (withSegments) {
           route.segments?.push({
             name: routeNodes[routeNodes.length - 1].name,
-            colors: [],
+            color: [],
             distance: 0,
             time: 0,
             closed: false,
@@ -688,7 +688,7 @@ export default class PathFinder {
       if (withSegments) {
         segments.push({
           name: startToEnd ? trail.name.start : trail.name.end,
-          colors: trail.color,
+          color: trail.color,
           distance: trail.distance,
           time: time,
           closed: route[i].closed,
