@@ -85,6 +85,10 @@ router.get('/hikes/completed', isAuthenticated, async (req, res) => {
 
 router.post('/change_password', isAuthenticated, async (req, res) => {
   const user = (await req.user) as User;
+  if (!req.body || !req.body.password) {
+    return res.status(400).send({ message: 'Missing parameters' });
+  }
+
   const currentPassword = req.body.password.current;
   const newPassword = req.body.password.new;
   const confirmPassword = req.body.password.confirm;
@@ -111,6 +115,30 @@ router.post('/change_password', isAuthenticated, async (req, res) => {
     return res.status(200).send(updatedUser);
   } else {
     return res.status(403).send({ message: 'Incorrect password' });
+  }
+});
+
+router.patch('/edit', isAuthenticated, async (req, res) => {
+  const { name } = req.body;
+  const user = (await req.user) as User;
+
+  if (!name) {
+    return res.status(400).send({ message: 'Missing parameters' });
+  }
+
+  if (name === user.name) {
+    return res.status(400).send({ message: 'Name is the same' });
+  }
+
+  try {
+    user.name = name;
+    const updatedUser = await user.save();
+
+    return res.status(200).send(updatedUser);
+  } catch (error) {
+    return res.status(500).send({
+      message: 'Server error',
+    });
   }
 });
 

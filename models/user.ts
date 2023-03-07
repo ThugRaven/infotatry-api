@@ -87,6 +87,12 @@ const userSchema = new Schema<User>(
     stats: {
       type: userStatsSchema,
       required: true,
+      default: {
+        time: 0,
+        distance: 0,
+        ascent: 0,
+        descent: 0,
+      },
     },
   },
   { timestamps: true, autoIndex: false },
