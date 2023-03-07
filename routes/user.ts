@@ -3,7 +3,7 @@ import { CompletedHike, PlannedHike } from '../models/hike';
 import { User } from '../models/user';
 import { comparePasswords, hashPassword } from '../utils/password-utils';
 import { getPaginationValues } from '../utils/utils';
-import { isAuthenticated } from './auth';
+import { isAuthenticated, isAuthenticatedWithRoles } from './auth';
 
 const router = express.Router();
 
@@ -15,6 +15,10 @@ router.get('/', async (req, res) => {
   }
 
   return res.status(200).send({ user: null });
+});
+
+router.get('/admin', isAuthenticatedWithRoles(['admin']), async (req, res) => {
+  return res.status(200).send({ message: 'Ok' });
 });
 
 router.get('/hikes/count', isAuthenticated, async (req, res) => {
