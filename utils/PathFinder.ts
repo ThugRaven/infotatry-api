@@ -362,6 +362,9 @@ export default class PathFinder {
         distance: 0,
         time: 0,
         length: 0,
+        type: routeNodes[routeNodes.length - 1].type,
+        node_id: routeNodes[routeNodes.length - 1].id,
+        trail_id: -1,
       });
 
       const encoded = encode(decodedArray);
@@ -811,7 +814,11 @@ export default class PathFinder {
         distance: trail.distance,
         time,
         length: decoded.length,
+        type: startToEnd ? nodeStart!.type : nodeEnd!.type,
+        node_id: startToEnd ? trail.node_id.start : trail.node_id.end,
+        trail_id: trail.id,
       };
+
       segments.push(segment);
 
       console.log(

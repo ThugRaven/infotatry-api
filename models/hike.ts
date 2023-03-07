@@ -6,6 +6,9 @@ export interface Segment {
   distance: number;
   time: number;
   length: number;
+  type: string;
+  node_id: number;
+  trail_id: number;
 }
 
 export interface PlannedHike {
@@ -57,6 +60,18 @@ const segmentSchema = new mongoose.Schema(
       required: true,
     },
     length: {
+      type: Number,
+      required: true,
+    },
+    type: {
+      type: String,
+      required: true,
+    },
+    node_id: {
+      type: Number,
+      required: true,
+    },
+    trail_id: {
       type: Number,
       required: true,
     },
