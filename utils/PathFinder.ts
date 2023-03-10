@@ -47,11 +47,6 @@ type SegmentNode = {
   parent: SegmentNode | null;
 };
 
-type WeatherSite = {
-  id: number;
-  name: string;
-};
-
 type TrailSegment = {
   name: string;
   color: TrailColor[];
@@ -75,7 +70,7 @@ export type Route = {
   ascent: number;
   descent: number;
   type: 'normal' | 'closed' | 'shortest';
-  weatherSite: WeatherSite | null;
+  weatherSite: string;
 };
 
 export type PathSegment = {
@@ -193,7 +188,7 @@ export default class PathFinder {
           ascent: 0,
           descent: 0,
           type: 'shortest',
-          weatherSite: null,
+          weatherSite: '',
         };
 
         let highestNode: Node | null = null;
@@ -271,15 +266,9 @@ export default class PathFinder {
 
         const lastNode = routeNodes[routeNodes.length - 1];
         if (highestNode) {
-          route.weatherSite = {
-            id: highestNode.id,
-            name: highestNode.name,
-          };
+          route.weatherSite = highestNode.name;
         } else {
-          route.weatherSite = {
-            id: lastNode.id,
-            name: lastNode.name,
-          };
+          route.weatherSite = lastNode.name;
         }
 
         console.log(route.weatherSite);
@@ -317,7 +306,7 @@ export default class PathFinder {
         ascent: 0,
         descent: 0,
         type: 'shortest',
-        weatherSite: null,
+        weatherSite: '',
       };
 
       let highestNode: Node | null = null;
@@ -370,15 +359,9 @@ export default class PathFinder {
       const encoded = encode(decodedArray);
       const lastNode = routeNodes[routeNodes.length - 1];
       if (highestNode) {
-        route.weatherSite = {
-          id: highestNode.id,
-          name: highestNode.name,
-        };
+        route.weatherSite = highestNode.name;
       } else {
-        route.weatherSite = {
-          id: lastNode.id,
-          name: lastNode.name,
-        };
+        route.weatherSite = lastNode.name;
       }
 
       console.log(route.weatherSite);
