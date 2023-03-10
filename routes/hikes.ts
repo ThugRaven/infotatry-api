@@ -244,8 +244,8 @@ router.post('/completed/:id', isAuthenticated, async (req, res) => {
 
   try {
     const hike = await completedHike.save({ session });
-    const updatedUser = await user.save({ session });
-
+    await user.save({ session });
+    await PlannedHike.deleteOne({ _id: plannedHike._id }, { session });
     await session.commitTransaction();
     session.endSession();
     return res.status(201).send(hike);
