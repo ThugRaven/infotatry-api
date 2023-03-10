@@ -61,6 +61,7 @@ router.get('/hikes/planned', isAuthenticated, async (req, res) => {
     return res.status(200).send({ page, pageSize, count, data: [] });
   }
   const plannedHikes = await PlannedHike.find({ userId: user.id })
+    .sort({ createdAt: -1 })
     .skip(offset)
     .limit(pageSize);
 
@@ -77,6 +78,7 @@ router.get('/hikes/completed', isAuthenticated, async (req, res) => {
     return res.status(200).send({ page, pageSize, count, data: [] });
   }
   const completedHikes = await CompletedHike.find({ userId: user.id })
+    .sort({ createdAt: -1 })
     .skip(offset)
     .limit(pageSize);
 
