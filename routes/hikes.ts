@@ -220,6 +220,7 @@ router.post('/completed/:id', isAuthenticated, async (req, res) => {
     encoded,
     elevations,
     segments,
+    weatherSite: route.weatherSite,
   });
 
   const session = await db.startSession();

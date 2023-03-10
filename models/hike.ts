@@ -39,6 +39,7 @@ export interface CompletedHike {
   encoded: string;
   elevations: number[];
   segments: Segment[];
+  weatherSite: string;
 }
 
 const segmentSchema = new mongoose.Schema(
@@ -171,6 +172,11 @@ const completedhikeSchema = new mongoose.Schema(
     segments: {
       type: [segmentSchema],
       required: true,
+    },
+    weatherSite: {
+      type: String,
+      required: true,
+      default: '',
     },
   },
   { timestamps: true },
