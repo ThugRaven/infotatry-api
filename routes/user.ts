@@ -17,6 +17,10 @@ router.get('/', async (req, res) => {
   return res.status(200).send({ user: null });
 });
 
+router.get('/authenticated', isAuthenticated, async (req, res) => {
+  return res.status(200).send({ message: 'Ok' });
+});
+
 router.get('/admin', isAuthenticatedWithRoles(['admin']), async (req, res) => {
   return res.status(200).send({ message: 'Ok' });
 });
