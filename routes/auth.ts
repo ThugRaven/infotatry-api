@@ -1,9 +1,11 @@
+import * as dotenv from 'dotenv';
 import express, { NextFunction, Request, Response } from 'express';
 import passport from 'passport';
 import { User } from '../models/user';
 import { hashPassword } from '../utils/password-utils';
 
 const router = express.Router();
+dotenv.config();
 
 router.post('/register', async (req, res) => {
   try {
@@ -33,8 +35,6 @@ router.post('/register', async (req, res) => {
       });
     }
   }
-
-  return res.status(200).send();
 });
 
 router.post('/login', (req, res, next) => {
@@ -59,8 +59,8 @@ router.get('/login/google', passport.authenticate('google'));
 router.get(
   '/login/google/callback',
   passport.authenticate('google', {
-    successRedirect: 'http://localhost:3000/',
-    failureRedirect: 'http://localhost:3000/login',
+    successRedirect: `${process.env.WEB_URL}/`,
+    failureRedirect: `${process.env.WEB_URL}/login`,
   }),
 );
 
@@ -97,7 +97,8 @@ export const isAuthenticatedWithRoles = (neededRoles = ['']) => {
 router.post('/logout', isAuthenticated, (req, res, next) => {
   req.logout((err) => {
     if (err) {
-      return next(err);
+      return res.status(500).send({ message: 'Server error' });
+      // return next(err);
     }
 
     return res.status(201).send({ redirect: '/' });

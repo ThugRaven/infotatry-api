@@ -34,7 +34,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: process.env.WEB_URL,
     credentials: true,
   }),
 );
@@ -53,8 +53,8 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.listen(8080, () => {
-  console.log('Server started at http://localhost:8080');
+app.listen(process.env.SERVER_PORT, () => {
+  console.log(`Server started at ${process.env.SERVER_URL}`);
 });
 
 initializePassport(
