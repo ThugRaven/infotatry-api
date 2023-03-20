@@ -1,5 +1,6 @@
 import express from 'express';
 import { Avalanche } from '../models/avalanche';
+import { getPaginationValues } from '../utils/utils';
 import { isAuthenticatedWithRoles } from './auth';
 
 const router = express.Router();
@@ -20,9 +21,19 @@ router.get('/week', async (req, res) => {
 });
 
 router.get('/all', isAuthenticatedWithRoles(['admin']), async (req, res) => {
-  const avalanches = await Avalanche.find();
+  const queryPage = req.query.page?.toString();
+  const { page, pageSize, offset } = getPaginationValues(queryPage, 10);
+  const count = await Avalanche.countDocuments();
 
-  return res.status(200).send(avalanches);
+  if (offset >= count) {
+    return res.status(200).send({ page, pageSize, count, data: [] });
+  }
+  const avalanches = await Avalanche.find()
+    .sort({ createdAt: -1 })
+    .skip(offset)
+    .limit(pageSize);
+
+  return res.status(200).send({ page, pageSize, count, data: avalanches });
 });
 
 router.post('/', isAuthenticatedWithRoles(['admin']), async (req, res) => {
