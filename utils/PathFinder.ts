@@ -215,8 +215,9 @@ export default class PathFinder {
               ? passedClosedTrail
               : foundPath.passedClosedTrail;
             console.log('passedClosedTrail', passedClosedTrail);
-          } else {
+          } else if (i === 0) {
             console.log('Route not found');
+            return null;
           }
           if (foundPath && foundPath.path) {
             segment = foundPath.path as PathSegment;
@@ -246,6 +247,11 @@ export default class PathFinder {
           }
         }
 
+        // Route not reachable with trail avoidance, skip
+        if (i > 0 && route.trails.length === 0) {
+          break;
+        }
+
         if (withSegments) {
           route.segments?.push({
             name: routeNodes[routeNodes.length - 1].name,
@@ -257,11 +263,6 @@ export default class PathFinder {
             node_id: routeNodes[routeNodes.length - 1].id,
             trail_id: -1,
           });
-        }
-
-        // Route not reachable with trail avoidance, skip
-        if (i > 0 && route.trails.length === 0) {
-          break;
         }
 
         const lastNode = routeNodes[routeNodes.length - 1];
@@ -407,11 +408,7 @@ export default class PathFinder {
 
       for (let i = 0; i < openSet.length; i++) {
         const isClosed = mapFeatures.closedTrails.has(openSet[i].trail_id);
-        if (
-          openSet[i].fCost < currentNode.fCost ||
-          (openSet[i].fCost === currentNode.fCost &&
-            openSet[i].hCost < currentNode.hCost)
-        ) {
+        if (openSet[i].fCost < currentNode.fCost) {
           if (isClosed && avoidClosedTrails) {
             console.log('Skipped closed trail:', openSet[i].trail_id);
             continue;
