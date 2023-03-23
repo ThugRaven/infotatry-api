@@ -1,5 +1,6 @@
 import express from 'express';
 import { Announcement } from '../models/announcement';
+import { getPaginationValues } from '../utils/utils';
 import { isAuthenticatedWithRoles } from './auth';
 
 const router = express.Router();
@@ -14,9 +15,19 @@ router.get('/closures', async (req, res) => {
 });
 
 router.get('/all', isAuthenticatedWithRoles(['admin']), async (req, res) => {
-  const announcements = await Announcement.find();
+  const queryPage = req.query.page?.toString();
+  const { page, pageSize, offset } = getPaginationValues(queryPage, 10);
+  const count = await Announcement.countDocuments();
 
-  return res.status(200).send(announcements);
+  if (offset >= count) {
+    return res.status(200).send({ page, pageSize, count, data: [] });
+  }
+  const announcements = await Announcement.find()
+    .sort({ createdAt: -1 })
+    .skip(offset)
+    .limit(pageSize);
+
+  return res.status(200).send({ page, pageSize, count, data: announcements });
 });
 
 router.post('/', isAuthenticatedWithRoles(['admin']), async (req, res) => {

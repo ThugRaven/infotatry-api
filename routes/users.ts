@@ -1,13 +1,24 @@
 import express from 'express';
 import { User } from '../models/user';
+import { getPaginationValues } from '../utils/utils';
 import { isAuthenticatedWithRoles } from './auth';
 
 const router = express.Router();
 
 router.get('/', isAuthenticatedWithRoles(['admin']), async (req, res) => {
-  const users = await User.find();
+  const queryPage = req.query.page?.toString();
+  const { page, pageSize, offset } = getPaginationValues(queryPage, 10);
+  const count = await User.countDocuments();
 
-  return res.status(200).send(users);
+  if (offset >= count) {
+    return res.status(200).send({ page, pageSize, count, data: [] });
+  }
+  const users = await User.find()
+    .sort({ createdAt: -1 })
+    .skip(offset)
+    .limit(pageSize);
+
+  return res.status(200).send({ page, pageSize, count, data: users });
 });
 
 router.post(
