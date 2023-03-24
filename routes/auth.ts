@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import express, { NextFunction, Request, Response } from 'express';
 import passport from 'passport';
+import z from 'zod';
 import { User } from '../models/user';
 import { hashPassword } from '../utils/password-utils';
 
@@ -9,10 +10,31 @@ dotenv.config();
 
 router.post('/register', async (req, res) => {
   try {
-    const hashedPassword = await hashPassword(req.body.password);
+    const nameSchema = z.string().min(3, {
+      message: 'Nazwa użytkownika musi mieć co najmniej 3 znaki!',
+    });
+    const emailSchema = z
+      .string()
+      .email({ message: 'Niepoprawny adres email!' });
+    const passwordSchema = z
+      .string()
+      .min(3, { message: 'Hasło musi mieć co najmniej 3 znaki!' });
+    const name = nameSchema.parse(req.body.name);
+    const email = emailSchema.parse(req.body.email);
+    const password = passwordSchema.parse(req.body.password);
+
+    const userExist = await User.findOne({ email });
+    if (userExist) {
+      return res.status(400).send({
+        status: 400,
+        message: 'Użytkownik o podanym adresie email już istnieje!',
+      });
+    }
+
+    const hashedPassword = await hashPassword(password);
     const newUser = new User({
-      name: req.body.name,
-      email: req.body.email,
+      name,
+      email,
       password: hashedPassword,
       stats: {
         time: 0,
@@ -28,6 +50,13 @@ router.post('/register', async (req, res) => {
 
     // return res.status(201).send(user);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).send({
+        status: 400,
+        message: error.issues[0].message,
+      });
+    }
+
     if (error instanceof Error) {
       return res.status(400).send({
         status: 400,
