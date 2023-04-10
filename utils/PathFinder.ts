@@ -1,8 +1,8 @@
 import distance from '@turf/distance';
 import { Segment } from '../models/hike';
-import { decode, encode } from './geo-utils';
 import Graph from './Graph';
 import { mapFeatures } from './MapFeatures';
+import { decode, encode } from './geo-utils';
 
 export type TrailColor = 'red' | 'blue' | 'green' | 'yellow' | 'black';
 
@@ -228,7 +228,7 @@ export default class PathFinder {
             route.descent += segment.descent;
             route.type = passedClosedTrail
               ? 'closed'
-              : j > 0
+              : i > 0
               ? 'normal'
               : 'shortest';
 
