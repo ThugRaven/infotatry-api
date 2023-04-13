@@ -72,6 +72,11 @@ router.post('/login', (req, res, next) => {
       return next(err);
     }
     if (!user) {
+      if (info.message === 'User banned') {
+        const until = req.body.until;
+        const reason = req.body.reason;
+        return res.status(400).send({ message: info.message, until, reason });
+      }
       return res.status(400).send({ message: info.message });
     }
     req.logIn(user, (err) => {

@@ -1,5 +1,8 @@
 import { PassportStatic } from 'passport';
-import { Strategy as LocalStrategy, VerifyFunction } from 'passport-local';
+import {
+  Strategy as LocalStrategy,
+  VerifyFunctionWithRequest,
+} from 'passport-local';
 import { User } from '../models/user';
 import { comparePasswords } from './password-utils';
 
@@ -8,7 +11,12 @@ export function initializePassport(
   getUserByEmail: (email: string) => Promise<User | null>,
   getUserById: (id: string) => Promise<User | null>,
 ) {
-  const authenticateUser: VerifyFunction = async (email, password, done) => {
+  const authenticateUser: VerifyFunctionWithRequest = async (
+    req,
+    email,
+    password,
+    done,
+  ) => {
     const user = await getUserByEmail(email);
     if (!user) {
       console.log('user not found');
@@ -23,9 +31,16 @@ export function initializePassport(
     if (
       user.ban.duration &&
       user.ban.bannedAt &&
-      user.ban.bannedAt.getTime() + user.ban.duration > Date.now()
+      (user.ban.bannedAt.getTime() + user.ban.duration > Date.now() ||
+        user.ban.duration === -1)
     ) {
       console.log('banned');
+      const until =
+        user.ban.duration === -1
+          ? -1
+          : user.ban.bannedAt.getTime() + user.ban.duration;
+      req.body.until = until;
+      req.body.reason = user.ban.reason;
       return done(null, false, { message: 'User banned' });
     }
 
@@ -48,6 +63,7 @@ export function initializePassport(
       {
         usernameField: 'email',
         passwordField: 'password',
+        passReqToCallback: true,
       },
       authenticateUser,
     ),
