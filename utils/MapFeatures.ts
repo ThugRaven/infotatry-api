@@ -50,18 +50,21 @@ class MapFeatures {
     this.closedTrails.clear();
 
     this.announcements.forEach((announcement) => {
-      announcement.featuresIds.forEach((id) => {
-        const trail = this.trails.get(id);
+      if (announcement.featuresType === 'trail') {
+        announcement.featuresIds.forEach((id) => {
+          const trail = this.trails.get(id);
 
-        if (
-          trail &&
-          (!announcement.since || announcement.since.getTime() <= Date.now()) &&
-          (!announcement.until || announcement.until.getTime() >= Date.now())
-        ) {
-          this.closedTrails.add(id);
-          console.log('Closed trail id:', trail.id);
-        }
-      });
+          if (
+            trail &&
+            (!announcement.since ||
+              announcement.since.getTime() <= Date.now()) &&
+            (!announcement.until || announcement.until.getTime() >= Date.now())
+          ) {
+            this.closedTrails.add(id);
+            console.log('Closed trail id:', trail.id);
+          }
+        });
+      }
     });
   }
 }
