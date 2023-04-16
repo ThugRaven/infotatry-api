@@ -43,6 +43,7 @@ app.use(
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
+    unset: 'destroy',
     store: MongoStore.create({
       client: db.getClient(),
       touchAfter: 24 * 60 * 60, // 24 hours

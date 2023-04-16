@@ -129,7 +129,7 @@ export const isAuthenticatedWithRoles = (neededRoles = ['']) => {
 };
 
 router.post('/logout', isAuthenticated, (req, res, next) => {
-  req.logout((err) => {
+  req.session.destroy((err) => {
     if (err) {
       return res.status(500).send({ message: 'Server error' });
       // return next(err);
@@ -137,6 +137,14 @@ router.post('/logout', isAuthenticated, (req, res, next) => {
 
     return res.status(201).send({ redirect: '/' });
   });
+  // req.logout((err) => {
+  //   if (err) {
+  //     return res.status(500).send({ message: 'Server error' });
+  //     // return next(err);
+  //   }
+
+  //   return res.status(201).send({ redirect: '/' });
+  // });
 });
 
 export default router;

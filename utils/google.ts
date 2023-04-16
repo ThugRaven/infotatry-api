@@ -1,7 +1,7 @@
 import { PassportStatic } from 'passport';
 import {
-  Profile,
   Strategy as GoogleStrategy,
+  Profile,
   VerifyCallback,
 } from 'passport-google-oauth20';
 import { Account } from '../models/account';
