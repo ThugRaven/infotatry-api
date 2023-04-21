@@ -17,7 +17,6 @@ class MapFeatures {
   async initialize() {
     this.initializeFeatures();
     await this.updateAnnouncements();
-    this.setClosedTrails();
   }
 
   initializeFeatures() {
@@ -43,6 +42,7 @@ class MapFeatures {
 
   async updateAnnouncements() {
     this.announcements = await this.fetchAnnouncements();
+    this.setClosedTrails();
   }
 
   setClosedTrails() {

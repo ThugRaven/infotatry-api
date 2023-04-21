@@ -1,5 +1,6 @@
 import express from 'express';
 import { Announcement } from '../models/announcement';
+import { mapFeatures } from '../utils/MapFeatures';
 import { getPaginationValues } from '../utils/utils';
 import { isAuthenticatedWithRoles } from './auth';
 
@@ -64,6 +65,7 @@ router.post('/', isAuthenticatedWithRoles(['admin']), async (req, res) => {
 
   try {
     const newAnnouncement = await announcement.save();
+    await mapFeatures.updateAnnouncements();
     return res.status(201).send(newAnnouncement);
   } catch (error) {
     if (error instanceof Error) {
@@ -82,6 +84,7 @@ router.patch('/:id', isAuthenticatedWithRoles(['admin']), async (req, res) => {
   if (announcement) {
     announcement.isClosed = !announcement.isClosed;
     const updatedAnnouncement = await announcement.save();
+    await mapFeatures.updateAnnouncements();
 
     return res.status(200).send(updatedAnnouncement);
   }
@@ -117,6 +120,7 @@ router.put('/:id', isAuthenticatedWithRoles(['admin']), async (req, res) => {
     announcement.source = source;
     announcement.description = description;
     const updatedAnnouncement = await announcement.save();
+    await mapFeatures.updateAnnouncements();
 
     return res.status(200).send(updatedAnnouncement);
   }
@@ -132,6 +136,8 @@ router.delete('/:id', isAuthenticatedWithRoles(['admin']), async (req, res) => {
   console.log(response);
 
   if (response.deletedCount) {
+    await mapFeatures.updateAnnouncements();
+
     return res.status(200).send({ deleted: true });
   }
 
