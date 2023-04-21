@@ -11,7 +11,16 @@ router.get('/', async (req, res) => {
   console.log(req.session);
   if (req.isAuthenticated()) {
     const user = (await req.user) as User;
-    return res.status(200).send({ user });
+    const { id, name, email, image, roles, ban, stats } = user;
+    return res.status(200).send({
+      id,
+      name,
+      email,
+      image,
+      roles,
+      ban,
+      stats,
+    });
   }
 
   return res.status(200).send({ user: null });
