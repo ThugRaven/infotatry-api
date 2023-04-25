@@ -13,13 +13,15 @@ router.get('/', async (req, res) => {
     const user = (await req.user) as User;
     const { id, name, email, image, roles, ban, stats } = user;
     return res.status(200).send({
-      id,
-      name,
-      email,
-      image,
-      roles,
-      ban,
-      stats,
+      user: {
+        id,
+        name,
+        email,
+        image,
+        roles,
+        ban,
+        stats,
+      },
     });
   }
 
