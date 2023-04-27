@@ -66,7 +66,6 @@ initializePassport(
   },
   async (id: string) => {
     console.log('get user by id');
-    // return await User.findById(id).select({ password: 0 });
     return await User.findById(id);
   },
 );

@@ -126,9 +126,6 @@ export default class PathFinder {
         },
       ),
     );
-
-    // console.log(this.graph.adjacencyList);
-    //   console.log(graph.adjacencyList);
   }
 
   getNodes(names: string[]) {
@@ -144,8 +141,6 @@ export default class PathFinder {
       }
     });
 
-    // console.log(this.nodeNames);
-    // console.log(foundNodes);
     return foundNodes;
   }
 
@@ -424,7 +419,6 @@ export default class PathFinder {
 
       if (currentNode.id === targetNode.id) {
         console.timeEnd('Search');
-        //   console.log(closedSet);
         if (!raw) {
           const { path, passedClosedTrail } = this.retracePath(
             currentNode,
@@ -442,7 +436,6 @@ export default class PathFinder {
           node.id !== currentNode.id && node.trail_id !== currentNode.trail_id,
       );
       closedSet.push(currentNode);
-      // console.log('currentNode', currentNode);
 
       const neighbors = this.graph.adjacencyList
         .get(currentNode.id)
@@ -476,7 +469,6 @@ export default class PathFinder {
             }
 
             const costToNeighbor = currentNode.gCost + neighbor.distance;
-            //   console.log(costToNeighbor, neighbor.id, neighbor.gCost, neighbor);
 
             const isClosed = mapFeatures.closedTrails.has(neighbor.trail_id);
             if (
@@ -511,7 +503,6 @@ export default class PathFinder {
                 )
               ) {
                 openSet.push(neighbor);
-                //   console.log('neighbor', neighbor);
               }
             }
           }
@@ -609,8 +600,6 @@ export default class PathFinder {
     }
     trailsIds.reverse();
 
-    // console.log(path);
-
     const route: {
       trail: Trail;
       closed: boolean;
@@ -631,8 +620,6 @@ export default class PathFinder {
       }
     });
 
-    //   console.log(route);
-    //   console.log(distance);
     const start = temp;
     const end = current;
     const segments: TrailSegment[] = [];
@@ -691,9 +678,6 @@ export default class PathFinder {
       );
     }
 
-    //   console.log(routeTime);
-    //   console.log(`${Math.floor(routeTime / 60)}h${routeTime % 60}m`);
-    // return { trails: route, duration: routeTime, distance };
     return {
       path: {
         trails: trailsIds,
@@ -725,8 +709,6 @@ export default class PathFinder {
     }
     trailsIds.reverse();
 
-    // console.log(path);
-
     const route: Trail[] = [];
     let highestNode: Node | null = null;
     let decodedArray = [];
@@ -747,8 +729,6 @@ export default class PathFinder {
       }
     });
 
-    //   console.log(route);
-    //   console.log(distance);
     const start = temp;
     const end = current;
     for (let i = 0; i < route.length; i++) {
@@ -811,9 +791,6 @@ export default class PathFinder {
       );
     }
 
-    //   console.log(routeTime);
-    //   console.log(`${Math.floor(routeTime / 60)}h${routeTime % 60}m`);
-    // return { trails: route, duration: routeTime, distance };
     console.log('final', decodedArray);
     console.log('final', encode(decodedArray));
 

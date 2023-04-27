@@ -47,8 +47,6 @@ router.post('/register', async (req, res) => {
     const user = await newUser.save();
     passport.authenticate('local');
     return res.status(201).send({ redirect: '/' });
-
-    // return res.status(201).send(user);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).send({
@@ -132,7 +130,6 @@ router.post('/logout', isAuthenticated, (req, res, next) => {
   req.session.destroy((err) => {
     if (err) {
       return res.status(500).send({ message: 'Server error' });
-      // return next(err);
     }
 
     return res.status(201).send({ redirect: '/' });
