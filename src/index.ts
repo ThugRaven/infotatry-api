@@ -44,12 +44,12 @@ app.use(
     resave: false,
     saveUninitialized: false,
     unset: 'destroy',
-    proxy: true,
+    proxy: process.env.NODE_ENV === 'production',
     store: MongoStore.create({
       client: db.getClient(),
       touchAfter: 24 * 60 * 60, // 24 hours
     }),
-    cookie: { secure: true, sameSite: 'none' },
+    cookie: { secure: process.env.NODE_ENV === 'production', sameSite: 'none' },
   }),
 );
 app.use(passport.initialize());
