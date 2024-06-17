@@ -49,7 +49,7 @@ app.use(
       client: db.getClient(),
       touchAfter: 24 * 60 * 60, // 24 hours
     }),
-    cookie: { secure: true },
+    cookie: { secure: true, sameSite: 'none' },
   }),
 );
 app.use(passport.initialize());
