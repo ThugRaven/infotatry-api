@@ -1,8 +1,8 @@
 import express from 'express';
 import mongoose, { HydratedDocument } from 'mongoose';
-import { db } from '../api/index';
 import { CompletedHike, PlannedHike } from '../models/hike';
 import { User, UserStats } from '../models/user';
+import { db } from '../src/index';
 import PathFinder from '../utils/PathFinder';
 import { isAuthenticated } from './auth';
 
