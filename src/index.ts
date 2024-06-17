@@ -50,10 +50,9 @@ app.use(
       touchAfter: 24 * 60 * 60, // 24 hours
     }),
     cookie: {
+      httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : undefined,
-      domain:
-        process.env.NODE_ENV === 'production' ? 'infotatry.vercel.app' : '',
     },
   }),
 );
