@@ -44,6 +44,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     unset: 'destroy',
+    proxy: true,
     store: MongoStore.create({
       client: db.getClient(),
       touchAfter: 24 * 60 * 60, // 24 hours
