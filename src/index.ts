@@ -53,9 +53,7 @@ app.use(
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : undefined,
       domain:
-        process.env.NODE_ENV === 'production'
-          ? 'https://infotatry.vercel.app/'
-          : '',
+        process.env.NODE_ENV === 'production' ? 'infotatry.vercel.app' : '',
     },
   }),
 );
