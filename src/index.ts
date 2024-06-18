@@ -51,6 +51,7 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
+      domain: 'infotatry.xyz',
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : undefined,
     },
